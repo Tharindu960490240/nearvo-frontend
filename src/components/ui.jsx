@@ -14,11 +14,12 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
 import Rating from '@mui/material/Rating';
-import Snackbar from '@mui/material/Snackbar';
 import MuiSwitch from '@mui/material/Switch';
 import MuiTab from '@mui/material/Tab';
 import MuiTabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
+import CustomSnackbar from './CustomSnackbar.jsx';
+import { InlineLoader } from './LoadingSpinner.jsx';
 import {
   LuCircleAlert as CircleAlert,
   LuCircleCheck as CircleCheck,
@@ -35,8 +36,8 @@ export function Spinner({ small, white }) {
   return <CircularProgress size={small ? 16 : 34} thickness={small ? 5 : 4} color={white ? 'inherit' : 'primary'} aria-label="Loading" />;
 }
 
-export function LoadingPage() {
-  return <div className="loading-page"><Spinner /></div>;
+export function LoadingPage({ text }) {
+  return <InlineLoader text={text} />;
 }
 
 export function Skeleton({ height = 120, count = 1 }) {
@@ -230,22 +231,24 @@ export function IconInput(props) {
 
 export { Button };
 
-/* ---------- Toasts (Material UI Snackbar) ---------- */
+/* ---------- Toasts (AFC-style CustomSnackbar) ---------- */
+// toast(message, type = 'success', { action: { label, onClick }, title })
+// type: 'success' | 'error' | 'warning' | 'info'
 const ToastContext = createContext(() => {});
 export function ToastProvider({ children }) {
   const [toast, setToast] = useState(null);
-  const show = useCallback((message, type = 'success') => setToast({ message, type, key: Date.now() }), []);
-  const close = (_, reason) => reason !== 'clickaway' && setToast(null);
+  const [open, setOpen] = useState(false);
+  const show = useCallback((message, type = 'success', opts = {}) => {
+    setToast({ message, severity: type === 'warn' ? 'warning' : type, ...opts, key: Date.now() });
+    setOpen(true);
+  }, []);
   return (
     <ToastContext.Provider value={show}>
       {children}
-      <Snackbar key={toast?.key} open={Boolean(toast)} autoHideDuration={4000} onClose={close}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <MuiAlert className="toast" onClose={close} severity={toast?.type === 'error' ? 'error' : 'success'} variant="filled"
-          icon={toast?.type === 'error' ? <CircleAlert size={20} /> : <CircleCheck size={20} />} sx={{ fontWeight: 600, boxShadow: 6 }}>
-          {toast?.message}
-        </MuiAlert>
-      </Snackbar>
+      {toast && (
+        <CustomSnackbar key={toast.key} open={open} severity={toast.severity} message={toast.message} title={toast.title}
+          action={toast.action} onClose={() => setOpen(false)} />
+      )}
     </ToastContext.Provider>
   );
 }

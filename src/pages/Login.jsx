@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LuLogIn as LogIn, LuMail as Mail } from 'react-icons/lu';
 import { homeFor, useAuth } from '../context/AuthContext.jsx';
 import { AuthLayout } from '../components/Layout.jsx';
+import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import { Alert, PasswordInput, Spinner, TextInput } from '../components/ui.jsx';
 
 const DEMO = [['Customer', 'customer@example.com'], ['Tradie', 'sam@example.com'], ['Admin', 'admin@example.com']];
@@ -35,6 +36,7 @@ export default function Login() {
         <TextInput label="Email" icon={Mail} id="email" type="email" required autoComplete="email" autoFocus value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
         <PasswordInput label="Password" id="password" autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
         {error && <Alert type="error">{error}</Alert>}
+        <LoadingSpinner open={busy} text="Signing you in" />
         <button className="btn btn-primary btn-lg btn-block" disabled={busy}>{busy && <Spinner small white />}Log in</button>
         <p className="small muted center">New to Nearvo? <Link to="/register" state={location.state} className="bold">Create an account</Link></p>
         <div className="center">

@@ -71,8 +71,10 @@ export default function Admin() {
   const resolve = async () => {
     setBusy(true);
     try {
-      await api(`/admin/reports/${resolving.report.id}/resolve`, { method: 'POST', body: { action: resolving.action, note } });
-      toast(resolving.action === 'act' ? 'Action taken. The reporter has been emailed.' : 'Report dismissed. The reporter has been emailed.');
+      const { report } = resolving;
+      await api(`/admin/reports/${report.id}/resolve`, { method: 'POST', body: { action: resolving.action, note } });
+      toast(resolving.action === 'act' ? 'Action taken. The reporter has been emailed.' : 'Report dismissed. The reporter has been emailed.',
+        'success', { action: { label: 'Undo', onClick: () => undo(report) } });
       setResolving(null);
       setNote('');
       load();
@@ -85,7 +87,7 @@ export default function Admin() {
   const undo = async (r) => {
     try {
       await api(`/admin/reports/${r.id}/undo`, { method: 'POST' });
-      toast('Undone. The report is open again.');
+      toast('Undone. The report is open again.', 'info');
       load();
     } catch (e) {
       toast(e.message, 'error');

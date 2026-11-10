@@ -12,6 +12,7 @@ import { localityLabel } from '../australia.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import LocationInput from '../components/LocationInput.jsx';
 import { CategoryTile } from '../components/CategoryIcon.jsx';
+import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import { Alert, Spinner, Stepper, TextInput } from '../components/ui.jsx';
 
 const STEPS = ['Trade', 'Job details', 'Location & timing'];
@@ -139,6 +140,7 @@ export default function PostJob() {
         )}
 
         {error && <Alert type="error" className="mt-lg">{error}</Alert>}
+        <LoadingSpinner open={saving} text="Posting your job" />
 
         <div className="row-between mt-xl">
           {step > 0

@@ -21,6 +21,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { CategoryTile } from '../components/CategoryIcon.jsx';
 import { AMOUNT_TYPE_LABEL, AbnBadge, JobStatusChip, QuoteStatusChip, TradieAvatar } from '../components/TradieBits.jsx';
 import ReportButton from '../components/ReportDialog.jsx';
+import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import { Alert, ConfirmDialog, Empty, LoadingPage, Spinner, StarInput, Stars, Stepper, TextInput, useToast } from '../components/ui.jsx';
 
 const telHref = (p) => `tel:${p.replace(/[^\d+]/g, '')}`;
@@ -302,6 +303,7 @@ export default function JobDetail() {
 
       <ConfirmDialog open={Boolean(confirm)} title={dialog?.title} text={dialog?.text} confirmLabel={dialog?.label} danger={dialog?.danger}
         busy={busy} onClose={() => setConfirm(null)} onConfirm={runConfirm} />
+      <LoadingSpinner open={busy} text="Saving" />
     </div>
   );
 }

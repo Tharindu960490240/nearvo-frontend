@@ -14,6 +14,7 @@ import { AuthLayout } from '../components/Layout.jsx';
 import AbnField from '../components/AbnField.jsx';
 import PasswordRules from '../components/PasswordRules.jsx';
 import { passwordOk } from '../passwordRules.js';
+import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import { Alert, CheckboxField, PasswordInput, Spinner, TextInput } from '../components/ui.jsx';
 
 export default function Register() {
@@ -84,6 +85,7 @@ export default function Register() {
           <span>I agree to the <Link to="/terms" target="_blank">Terms of Use</Link> and <Link to="/privacy" target="_blank">Privacy Policy</Link>{role === 'tradie' ? ', and confirm I hold any licences and insurance my work legally requires' : ''}.</span>
         </CheckboxField>
         {error && <Alert type="error">{error}</Alert>}
+        <LoadingSpinner open={busy} text="Creating your account" />
         <button className="btn btn-primary btn-lg btn-block" disabled={busy || (role === 'tradie' && !abr) || !agree || !passwordOk(form.password)}>
           {busy && <Spinner small white />}{role === 'tradie' ? 'Join as a tradie' : 'Sign up'}
         </button>
