@@ -1,5 +1,5 @@
 // Reusable bits for showing tradies, jobs and quotes.
-import { BadgeCheck } from 'lucide-react';
+import { LuBadgeCheck as BadgeCheck } from 'react-icons/lu';
 import { photoSrc } from '../api.js';
 
 const initials = (name = '') => name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');

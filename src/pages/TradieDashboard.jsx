@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BriefcaseBusiness, ChevronRight, Clock, DollarSign, Eye, MapPin, ReceiptText, SquarePen, Trophy } from 'lucide-react';
+import {
+  LuBriefcaseBusiness as BriefcaseBusiness,
+  LuChevronRight as ChevronRight,
+  LuClock as Clock,
+  LuDollarSign as DollarSign,
+  LuEye as Eye,
+  LuMapPin as MapPin,
+  LuReceiptText as ReceiptText,
+  LuSquarePen as SquarePen,
+  LuTrophy as Trophy,
+} from 'react-icons/lu';
 import { api, formatDistance, money, timeAgo } from '../api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { CategoryTile } from '../components/CategoryIcon.jsx';

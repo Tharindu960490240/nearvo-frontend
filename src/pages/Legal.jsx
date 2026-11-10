@@ -1,7 +1,7 @@
 // Starter Terms of Use, Privacy Policy and the public Report / complaints page.
 // IMPORTANT: these are plain-English starting points, not legal advice. Have an Australian lawyer review them before launch.
 import { Link, useSearchParams } from 'react-router-dom';
-import { Flag, Scale, ShieldCheck } from 'lucide-react';
+import { LuFlag as Flag, LuScale as Scale, LuShieldCheck as ShieldCheck } from 'react-icons/lu';
 import { SITE } from '../siteConfig.js';
 import { ReportForm } from '../components/ReportDialog.jsx';
 import { IconTile } from '../components/ui.jsx';

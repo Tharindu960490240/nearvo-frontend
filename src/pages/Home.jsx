@@ -1,14 +1,28 @@
+import InputAdornment from '@mui/material/InputAdornment';
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  ArrowRight, BadgeCheck, CircleCheck, FilePlus2, Flag, Handshake, HardHat, Hammer, MessageSquareReply, ReceiptText, Search, Star,
-} from 'lucide-react';
+  LuArrowRight as ArrowRight,
+  LuBadgeCheck as BadgeCheck,
+  LuCircleCheck as CircleCheck,
+  LuFilePlus2 as FilePlus2,
+  LuFlag as Flag,
+  LuHandshake as Handshake,
+  LuHardHat as HardHat,
+  LuHammer as Hammer,
+  LuMessageSquareReply as MessageSquareReply,
+  LuReceiptText as ReceiptText,
+  LuSearch as Search,
+  LuStar as Star,
+} from 'react-icons/lu';
 import { api } from '../api.js';
 import { localityLabel } from '../australia.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import TradieCard from '../components/TradieCard.jsx';
 import LocationInput from '../components/LocationInput.jsx';
-import { CategoryTile } from '../components/CategoryIcon.jsx';
+import { CategoryIcon, CategoryTile } from '../components/CategoryIcon.jsx';
 import { Alert, IconTile, Skeleton } from '../components/ui.jsx';
 
 export default function Home() {
@@ -40,20 +54,30 @@ export default function Home() {
     <>
       <section className="hero">
         <div className="container">
-          <span className="pill"><BadgeCheck size={16} color="var(--blue)" /> Every tradie's ABN is checked with the ABR</span>
+          <span className="pill"><BadgeCheck size={16} color="var(--brand)" /> Every tradie's ABN is checked with the ABR</span>
           <h1>Find a local <span className="blue">tradie</span>, fast</h1>
           <p className="hero-sub">
             Plumbers, electricians, painters, cleaners and more. Post your job for free, compare quotes from tradies near you, and choose who you hire.
           </p>
 
           <form className="searchbar" onSubmit={search}>
-            <label className="searchbar-part">
-              <Hammer size={20} />
-              <select aria-label="What trade do you need" value={slug} onChange={(e) => { setSlug(e.target.value); setError(''); }} className={slug ? '' : 'placeholder'}>
-                <option value="">What trade do you need?</option>
-                {categories?.map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
-              </select>
-            </label>
+            <div className="searchbar-part">
+              <TextField select variant="standard" fullWidth value={slug} onChange={(e) => { setSlug(e.target.value); setError(''); }}
+                slotProps={{
+                  htmlInput: { 'aria-label': 'What trade do you need' },
+                  input: { disableUnderline: true, sx: { py: 0.75 }, startAdornment: <InputAdornment position="start"><Hammer size={18} color="var(--brand)" /></InputAdornment> },
+                  select: {
+                    displayEmpty: true,
+                    renderValue: (v) => (v ? categories?.find((c) => c.slug === v)?.name : <span className="muted">What trade do you need?</span>),
+                    MenuProps: { slotProps: { paper: { sx: { maxHeight: 380 } } } },
+                  },
+                }}>
+                <MenuItem value="">Any trade</MenuItem>
+                {categories?.map((c) => (
+                  <MenuItem key={c.id} value={c.slug} sx={{ gap: 1.25 }}><CategoryIcon icon={c.icon} size={18} />{c.name}</MenuItem>
+                ))}
+              </TextField>
+            </div>
             <div className="searchbar-part">
               <LocationInput bare placeholder="Your suburb or postcode" onSelect={(p) => { setPlace(p); setError(''); }} />
             </div>

@@ -1,9 +1,38 @@
-// Small UI building blocks (no UI library).
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { CircleAlert, CircleCheck, Eye, EyeOff, Info, Lock, Star, TriangleAlert, X } from 'lucide-react';
+// Small UI building blocks. Form controls, dialogs and pop-up messages use Material UI
+// (like AFC); icons come from react-icons.
+import { createContext, forwardRef, useCallback, useContext, useState } from 'react';
+import MuiAlert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import MenuItem from '@mui/material/MenuItem';
+import Rating from '@mui/material/Rating';
+import Snackbar from '@mui/material/Snackbar';
+import MuiSwitch from '@mui/material/Switch';
+import MuiTab from '@mui/material/Tab';
+import MuiTabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
+import {
+  LuCircleAlert as CircleAlert,
+  LuCircleCheck as CircleCheck,
+  LuEye as Eye,
+  LuEyeOff as EyeOff,
+  LuInfo as Info,
+  LuLock as Lock,
+  LuStar as Star,
+  LuTriangleAlert as TriangleAlert,
+  LuX as X,
+} from 'react-icons/lu';
 
 export function Spinner({ small, white }) {
-  return <span className={`spinner ${small ? 'spinner-sm' : ''} ${white ? 'spinner-white' : ''}`} role="status" aria-label="Loading" />;
+  return <CircularProgress size={small ? 16 : 34} thickness={small ? 5 : 4} color={white ? 'inherit' : 'primary'} aria-label="Loading" />;
 }
 
 export function LoadingPage() {
@@ -15,65 +44,52 @@ export function Skeleton({ height = 120, count = 1 }) {
 }
 
 const ALERT_ICONS = { info: Info, success: CircleCheck, warn: TriangleAlert, error: CircleAlert };
+const SEVERITY = { info: 'info', success: 'success', warn: 'warning', error: 'error' };
 export function Alert({ type = 'info', icon, children, action, onClose, className = '' }) {
   const Icon = icon || ALERT_ICONS[type];
   return (
-    <div className={`alert alert-${type} ${className}`} role={type === 'error' ? 'alert' : 'status'}>
-      <Icon size={20} />
-      <div className="alert-body">{children}</div>
-      {action}
-      {onClose && <button className="link-btn" onClick={onClose} aria-label="Dismiss"><X size={18} /></button>}
-    </div>
+    <MuiAlert severity={SEVERITY[type] || 'info'} icon={<Icon size={20} />} className={`alert alert-${type} ${className}`}
+      onClose={onClose} action={action} role={type === 'error' ? 'alert' : 'status'} variant="standard">
+      {children}
+    </MuiAlert>
   );
 }
+
+const star = (size) => <Star size={size} fill="currentColor" strokeWidth={0} />;
 
 export function Stars({ value = 0, size = 16 }) {
-  const rounded = Math.round(value * 2) / 2;
   return (
-    <span className="stars" aria-label={`${value} out of 5 stars`}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <Star key={n} size={size} className={n <= Math.round(rounded) ? 'on' : ''} fill="currentColor" strokeWidth={0} />
-      ))}
-    </span>
+    <Rating className="stars" value={Number(value) || 0} precision={0.5} readOnly size="small"
+      icon={star(size)} emptyIcon={<Star size={size} fill="currentColor" strokeWidth={0} style={{ opacity: 0.25 }} />}
+      aria-label={`${value} out of 5 stars`} sx={{ verticalAlign: 'middle' }} />
   );
 }
 
-export function StarInput({ value, onChange, size = 32 }) {
-  const [hover, setHover] = useState(0);
+export function StarInput({ value, onChange, size = 32, name = 'rating' }) {
   return (
-    <div className="star-input" onMouseLeave={() => setHover(0)} role="radiogroup" aria-label="Rating">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <button type="button" key={n} className={n <= (hover || value) ? 'on' : ''} onMouseEnter={() => setHover(n)}
-          onClick={() => onChange(n)} aria-label={`${n} star${n > 1 ? 's' : ''}`} aria-checked={value === n} role="radio">
-          <Star size={size} fill="currentColor" strokeWidth={0} />
-        </button>
-      ))}
-    </div>
+    <Rating className="star-input" name={name} value={value || null} onChange={(_, v) => v && onChange(v)}
+      icon={star(size)} emptyIcon={<Star size={size} fill="currentColor" strokeWidth={0} style={{ opacity: 0.25 }} />}
+      sx={{ gap: 0.5 }} />
   );
 }
 
-export function Modal({ open, onClose, title, children, actions, width }) {
-  useEffect(() => {
-    if (!open) return undefined;
-    const onKey = (e) => e.key === 'Escape' && onClose?.();
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
-  if (!open) return null;
+export function Modal({ open, onClose, title, children, actions, width = 560 }) {
   return (
-    <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
-      <div className="modal" role="dialog" aria-modal="true" aria-label={title} style={width ? { maxWidth: width } : undefined}>
-        {title && <h3 className="mb-sm">{title}</h3>}
-        {children}
-        {actions && <div className="modal-actions">{actions}</div>}
-      </div>
-    </div>
+    <Dialog open={Boolean(open)} onClose={() => onClose?.()} fullWidth maxWidth={false}
+      slotProps={{ paper: { sx: { maxWidth: width, m: 2, width: 'calc(100% - 32px)' } } }} aria-label={title}>
+      {title && <DialogTitle sx={{ fontWeight: 800, pb: 1, pr: 6 }}>{title}</DialogTitle>}
+      {onClose && (
+        <IconButton onClick={onClose} aria-label="Close" sx={{ position: 'absolute', right: 10, top: 12 }}><X size={20} /></IconButton>
+      )}
+      <DialogContent sx={{ pt: title ? '4px !important' : 3 }}>{children}</DialogContent>
+      {actions && <DialogActions className="modal-actions" sx={{ px: 3, pb: 2.5, gap: 1, flexWrap: 'wrap' }}>{actions}</DialogActions>}
+    </Dialog>
   );
 }
 
 export function ConfirmDialog({ open, title, text, confirmLabel = 'Confirm', danger, onClose, onConfirm, busy }) {
   return (
-    <Modal open={open} onClose={onClose} title={title}
+    <Modal open={open} onClose={onClose} title={title} width={460}
       actions={<>
         <button className="btn btn-outline" onClick={onClose}>Go back</button>
         <button className={`btn ${danger ? 'btn-danger-solid' : 'btn-primary'}`} onClick={onConfirm} disabled={busy}>
@@ -87,13 +103,10 @@ export function ConfirmDialog({ open, title, text, confirmLabel = 'Confirm', dan
 
 export function Tabs({ value, onChange, tabs }) {
   return (
-    <div className="tabs" role="tablist">
-      {tabs.map(([key, label]) => (
-        <button key={key} role="tab" aria-selected={value === key} className={`tab ${value === key ? 'active' : ''}`} onClick={() => onChange(key)}>
-          {label}
-        </button>
-      ))}
-    </div>
+    <MuiTabs value={value} onChange={(_, v) => onChange(v)} variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile
+      sx={{ borderBottom: 1, borderColor: 'divider', mb: 2.5, '& .MuiTab-root': { fontWeight: 600, minHeight: 48 } }}>
+      {tabs.map(([key, label]) => <MuiTab key={key} value={key} label={label} className="tab" />)}
+    </MuiTabs>
   );
 }
 
@@ -132,7 +145,7 @@ export function IconTile({ icon: Icon, size = 44, color, bg }) {
 export function Stat({ icon, label, value, warn }) {
   return (
     <div className={`card stat ${warn ? 'card-warn' : ''}`}>
-      <IconTile icon={icon} bg={warn ? 'var(--orange-bg)' : undefined} color={warn ? 'var(--orange)' : undefined} />
+      <IconTile icon={icon} bg={warn ? 'var(--tint-amber)' : undefined} color={warn ? 'var(--on-amber)' : undefined} />
       <div>
         <div className="stat-value">{value ?? '–'}</div>
         <div className="small muted">{label}</div>
@@ -141,10 +154,11 @@ export function Stat({ icon, label, value, warn }) {
   );
 }
 
+/** Label + help text around a custom control (Material UI text fields carry their own label). */
 export function Field({ label, required, help, error, children, htmlFor }) {
   return (
     <div className="field">
-      {label && <label htmlFor={htmlFor}>{label}{required && <span className="req">*</span>}</label>}
+      {label && <label htmlFor={htmlFor}>{label}{required && <span className="req"> *</span>}</label>}
       {children}
       {error ? <span className="help error">{error}</span> : help && <span className="help">{help}</span>}
     </div>
@@ -153,60 +167,82 @@ export function Field({ label, required, help, error, children, htmlFor }) {
 
 export function Switch({ checked, onChange, children }) {
   return (
-    <label className="switch">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="switch-track" />
-      {children}
-    </label>
+    <FormControlLabel control={<MuiSwitch checked={Boolean(checked)} onChange={(e) => onChange(e.target.checked)} />}
+      label={children} sx={{ ml: 0, '& .MuiFormControlLabel-label': { fontWeight: 500 } }} />
   );
 }
 
-/* ---------- Toasts ---------- */
+export function CheckboxField({ id, checked, onChange, children }) {
+  return (
+    <FormControlLabel control={<Checkbox id={id} checked={Boolean(checked)} onChange={(e) => onChange(e.target.checked)} />}
+      label={children} sx={{ alignItems: 'flex-start', ml: -1, '& .MuiCheckbox-root': { pt: 0.25 }, '& .MuiFormControlLabel-label': { fontSize: '0.92rem', pt: 0.5 } }} />
+  );
+}
+
+/* ---------- Text inputs (Material UI) ---------- */
+const HTML_INPUT_PROPS = ['minLength', 'maxLength', 'min', 'max', 'step', 'inputMode', 'pattern'];
+
+/**
+ * Material UI text field with an optional react-icon at the start and any node at the end.
+ * Accepts normal <input> attributes (minLength, inputMode, ...) and passes them to the input.
+ * options: [[value, label]] turns it into a dropdown.
+ */
+export const TextInput = forwardRef(function TextInput(
+  { icon: Icon, end, help, error, options, slotProps = {}, children, ...rest }, ref
+) {
+  const htmlInput = { ...(slotProps.htmlInput || {}) };
+  for (const k of HTML_INPUT_PROPS) if (rest[k] !== undefined) { htmlInput[k] = rest[k]; delete rest[k]; }
+  const input = { ...(slotProps.input || {}) };
+  if (Icon) input.startAdornment = <InputAdornment position="start"><Icon size={18} /></InputAdornment>;
+  if (end) input.endAdornment = <InputAdornment position="end">{end}</InputAdornment>;
+  const isSelect = Boolean(options);
+  const shrink = Icon || rest.placeholder || rest.type === 'date' || isSelect;
+  return (
+    <TextField inputRef={ref} {...rest} select={isSelect || rest.select} error={Boolean(error)} helperText={error || help}
+      slotProps={{
+        ...slotProps, htmlInput, input,
+        ...(isSelect ? { select: { displayEmpty: true, MenuProps: { slotProps: { paper: { sx: { maxHeight: 360 } } } }, ...(slotProps.select || {}) } } : {}),
+        inputLabel: { ...(slotProps.inputLabel || {}), ...(shrink ? { shrink: true } : {}) },
+      }}>
+      {isSelect ? options.map(([v, l, disabled]) => <MenuItem key={v} value={v} disabled={Boolean(disabled)}>{l}</MenuItem>) : children}
+    </TextField>
+  );
+});
+
+export function PasswordInput({ id, value, onChange, autoComplete, minLength, required = true, label = 'Password', help }) {
+  const [show, setShow] = useState(false);
+  return (
+    <TextInput id={id} label={label} icon={Lock} type={show ? 'text' : 'password'} value={value} onChange={onChange}
+      autoComplete={autoComplete} minLength={minLength} required={required} help={help}
+      end={<IconButton edge="end" onClick={() => setShow(!show)} aria-label={show ? 'Hide password' : 'Show password'}>
+        {show ? <EyeOff size={18} /> : <Eye size={18} />}
+      </IconButton>} />
+  );
+}
+
+export function IconInput(props) {
+  return <TextInput {...props} />;
+}
+
+export { Button };
+
+/* ---------- Toasts (Material UI Snackbar) ---------- */
 const ToastContext = createContext(() => {});
 export function ToastProvider({ children }) {
   const [toast, setToast] = useState(null);
-  const show = useCallback((message, type = 'success') => setToast({ message, type, id: Date.now() }), []);
-  useEffect(() => {
-    if (!toast) return undefined;
-    const t = setTimeout(() => setToast(null), 3800);
-    return () => clearTimeout(t);
-  }, [toast]);
+  const show = useCallback((message, type = 'success') => setToast({ message, type, key: Date.now() }), []);
+  const close = (_, reason) => reason !== 'clickaway' && setToast(null);
   return (
     <ToastContext.Provider value={show}>
       {children}
-      {toast && (
-        <div className={`toast ${toast.type === 'error' ? 'error' : ''}`} role="status">
-          {toast.type === 'error' ? <CircleAlert size={18} /> : <CircleCheck size={18} />}
-          {toast.message}
-          <button onClick={() => setToast(null)} aria-label="Dismiss"><X size={16} /></button>
-        </div>
-      )}
+      <Snackbar key={toast?.key} open={Boolean(toast)} autoHideDuration={4000} onClose={close}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <MuiAlert className="toast" onClose={close} severity={toast?.type === 'error' ? 'error' : 'success'} variant="filled"
+          icon={toast?.type === 'error' ? <CircleAlert size={20} /> : <CircleCheck size={20} />} sx={{ fontWeight: 600, boxShadow: 6 }}>
+          {toast?.message}
+        </MuiAlert>
+      </Snackbar>
     </ToastContext.Provider>
   );
 }
 export const useToast = () => useContext(ToastContext);
-
-export function PasswordInput({ id, value, onChange, autoComplete, minLength, required = true }) {
-  const [show, setShow] = useState(false);
-  return (
-    <div className="input-wrap">
-      <span className="input-icon"><Lock size={18} /></span>
-      <input id={id} className="input has-end" type={show ? 'text' : 'password'} value={value} onChange={onChange}
-        autoComplete={autoComplete} minLength={minLength} required={required} />
-      <span className="input-end">
-        <button type="button" onClick={() => setShow(!show)} aria-label={show ? 'Hide password' : 'Show password'}>
-          {show ? <EyeOff size={18} /> : <Eye size={18} />}
-        </button>
-      </span>
-    </div>
-  );
-}
-
-export function IconInput({ icon: Icon, ...props }) {
-  return (
-    <div className="input-wrap">
-      <span className="input-icon"><Icon size={18} /></span>
-      <input className="input" {...props} />
-    </div>
-  );
-}

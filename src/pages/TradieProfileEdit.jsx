@@ -1,6 +1,17 @@
+import InputAdornment from '@mui/material/InputAdornment';
+import Slider from '@mui/material/Slider';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, CircleCheck, Hammer, MapPin, MessageSquareReply, Plus, Store, Trash2 } from 'lucide-react';
+import {
+  LuCamera as Camera,
+  LuCircleCheck as CircleCheck,
+  LuHammer as Hammer,
+  LuMapPin as MapPin,
+  LuMessageSquareReply as MessageSquareReply,
+  LuPlus as Plus,
+  LuStore as Store,
+  LuTrash2 as Trash2,
+} from 'react-icons/lu';
 import { api, timeAgo, upload } from '../api.js';
 import { localityLabel } from '../australia.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -8,7 +19,7 @@ import LocationInput from '../components/LocationInput.jsx';
 import MapView from '../components/MapView.jsx';
 import AbnField from '../components/AbnField.jsx';
 import { TradieAvatar } from '../components/TradieBits.jsx';
-import { Alert, Field, IconTile, LoadingPage, Spinner, Stars, useToast } from '../components/ui.jsx';
+import { Alert, IconTile, LoadingPage, Spinner, Stars, TextInput, useToast } from '../components/ui.jsx';
 
 const UNITS = ['per hour', 'per job', 'per m²', 'on quote'];
 
@@ -49,7 +60,7 @@ function ReviewReply({ review, onSaved }) {
       {review.reply && !open && <div className="reply" style={{ marginLeft: 0 }}><b className="tiny">Your reply:</b> {review.reply}</div>}
       {open ? (
         <div className="stack-sm mt-sm">
-          <textarea className="textarea" style={{ minHeight: 80 }} value={text} onChange={(e) => setText(e.target.value)} placeholder="Thank the customer or respond politely to any concerns." />
+          <TextInput label="Your reply" multiline minRows={3} value={text} onChange={(e) => setText(e.target.value)} placeholder="Thank the customer or respond politely to any concerns." />
           <div className="row"><button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>{busy && <Spinner small white />}Post reply</button><button className="btn btn-outline btn-sm" onClick={() => setOpen(false)}>Cancel</button></div>
         </div>
       ) : (
@@ -169,7 +180,7 @@ export default function TradieProfileEdit() {
             <div style={{ position: 'relative' }}>
               <TradieAvatar tradie={{ business_name: form.business_name || user.name, photo_url: photo }} size={100} />
               <button type="button" className="icon-btn" onClick={() => photoInput.current.click()} disabled={uploading} aria-label="Change photo"
-                style={{ position: 'absolute', right: -8, bottom: -8, background: 'var(--blue)', color: '#fff', borderColor: 'var(--blue)', borderRadius: '50%' }}>
+                style={{ position: 'absolute', right: -8, bottom: -8, background: 'var(--brand)', color: '#fff', borderColor: 'var(--brand)', borderRadius: '50%' }}>
                 {uploading ? <Spinner small white /> : <Camera size={18} />}
               </button>
               <input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={onPhoto} />
@@ -179,15 +190,11 @@ export default function TradieProfileEdit() {
           <div className="stack">
             <AbnField value={form.abn} onChange={(v) => setForm((f) => ({ ...f, abn: v }))} onResult={setAbr} confirmed={abnConfirmed}
               required={!abnDemo} label={abnDemo ? 'ABN or ACN (demo account)' : 'ABN or ACN'} />
-            <Field label="Business name" required htmlFor="bn"><input id="bn" className="input" required value={form.business_name} onChange={set('business_name')} /></Field>
-            <Field label="About your business" htmlFor="bio">
-              <textarea id="bio" className="textarea" value={form.bio} onChange={set('bio')} placeholder="What you specialise in, your experience, and what customers can expect." />
-            </Field>
-            <div className="grid grid-2">
-              <Field label="Years of experience" htmlFor="yrs"><input id="yrs" className="input" type="number" min="0" max="70" value={form.years_experience} onChange={set('years_experience')} /></Field>
-              <Field label="Trade licence number (optional)" htmlFor="lic" help="Shown on your profile as provided by you. Customers can check it with your state regulator.">
-                <input id="lic" className="input" value={form.licence_number} onChange={set('licence_number')} />
-              </Field>
+            <TextInput label="Business name" id="bn" required value={form.business_name} onChange={set('business_name')} />
+            <TextInput label="About your business" multiline minRows={4} id="bio" value={form.bio} onChange={set('bio')} placeholder="What you specialise in, your experience, and what customers can expect." />
+            <div className="form-row">
+              <TextInput label="Years of experience" id="yrs" type="number" min="0" max="70" value={form.years_experience} onChange={set('years_experience')} />
+              <TextInput label="Trade licence number (optional)" help="Shown on your profile as provided by you. Customers can check it with your state regulator." id="lic" value={form.licence_number} onChange={set('licence_number')} />
             </div>
           </div>
         </Section>
@@ -195,24 +202,13 @@ export default function TradieProfileEdit() {
         <Section icon={Hammer} title="Services & prices" subtitle="The trades you offer and a starting price for each">
           <div className="stack-sm">
             {form.services.map((s, i) => (
-              <div key={i} className="grid service-row" style={{ gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) auto', alignItems: 'end', gap: 10 }}>
-                <Field label={i === 0 ? 'Trade' : undefined}>
-                  <select className="select" aria-label="Trade" value={s.category_id} onChange={(e) => setService(i, 'category_id', e.target.value)}>
-                    <option value="">Choose a trade…</option>
-                    {categories.map((c) => <option key={c.id} value={c.id} disabled={usedIds.includes(c.id) && Number(s.category_id) !== c.id}>{c.name}</option>)}
-                  </select>
-                </Field>
-                <Field label={i === 0 ? 'Price from' : undefined}>
-                  <div className="prefix-wrap"><span className="prefix">$</span>
-                    <input className="input" aria-label="Price from" type="number" min="0" disabled={s.price_unit === 'on quote'}
-                      value={s.price_unit === 'on quote' ? '' : s.price_from} onChange={(e) => setService(i, 'price_from', e.target.value)} />
-                  </div>
-                </Field>
-                <Field label={i === 0 ? 'Unit' : undefined}>
-                  <select className="select" aria-label="Price unit" value={s.price_unit} onChange={(e) => setService(i, 'price_unit', e.target.value)}>
-                    {UNITS.map((u) => <option key={u}>{u}</option>)}
-                  </select>
-                </Field>
+              <div key={i} className="service-row" style={{ paddingTop: 6 }}>
+                <TextInput label="Trade" size="small" value={s.category_id} onChange={(e) => setService(i, 'category_id', e.target.value)}
+                  options={[['', 'Choose a trade…'], ...categories.map((c) => [c.id, c.name, usedIds.includes(c.id) && Number(s.category_id) !== c.id])]} />
+                <TextInput label="Price from" size="small" type="number" min="0" disabled={s.price_unit === 'on quote'}
+                  value={s.price_unit === 'on quote' ? '' : s.price_from} onChange={(e) => setService(i, 'price_from', e.target.value)}
+                  slotProps={{ input: { startAdornment: <InputAdornment position="start">$</InputAdornment> } }} />
+                <TextInput label="Unit" size="small" value={s.price_unit} onChange={(e) => setService(i, 'price_unit', e.target.value)} options={UNITS.map((u) => [u, u])} />
                 <button type="button" className="icon-btn" aria-label="Remove service" disabled={form.services.length === 1}
                   onClick={() => setForm((f) => ({ ...f, services: f.services.filter((_, j) => j !== i) }))}><Trash2 size={17} /></button>
               </div>
@@ -225,12 +221,14 @@ export default function TradieProfileEdit() {
 
         <Section icon={MapPin} title="Where you work" subtitle="You'll see jobs posted within your service area">
           <div className="stack">
-            <Field label="Your base suburb" required htmlFor="base"><LocationInput id="base" value={place ? localityLabel(place) : ''} onSelect={setPlace} label="Your base suburb" /></Field>
+            <LocationInput id="base" required value={place ? localityLabel(place) : ''} onSelect={setPlace} label="Your base suburb" />
             <div>
-              <label className="label" htmlFor="radius">I travel up to <span className="blue">{form.service_radius_km} km</span></label>
-              <input id="radius" type="range" className="range mt-sm" min="5" max="300" step="5" value={form.service_radius_km}
-                onChange={(e) => setForm((f) => ({ ...f, service_radius_km: Number(e.target.value) }))} />
-              <div className="range-labels"><span>5 km</span><span>100 km</span><span>200 km</span><span>300 km</span></div>
+              <label className="bold small" id="radius-label">I travel up to <span className="blue">{form.service_radius_km} km</span></label>
+              <div style={{ padding: '0 10px' }}>
+                <Slider id="radius" aria-labelledby="radius-label" min={5} max={300} step={5} value={form.service_radius_km} valueLabelDisplay="auto"
+                  valueLabelFormat={(v) => `${v} km`} marks={[{ value: 5, label: '5 km' }, { value: 100, label: '100 km' }, { value: 200, label: '200 km' }, { value: 300, label: '300 km' }]}
+                  onChange={(_, v) => setForm((f) => ({ ...f, service_radius_km: v }))} />
+              </div>
             </div>
             {place && <MapView points={[{ id: 0, latitude: place.latitude, longitude: place.longitude }]} circle={{ latitude: place.latitude, longitude: place.longitude, km: form.service_radius_km }} height={260} />}
           </div>

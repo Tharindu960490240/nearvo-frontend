@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CircleAlert, MailCheck } from 'lucide-react';
+import { LuCircleAlert as CircleAlert, LuMailCheck as MailCheck } from 'react-icons/lu';
 import { api } from '../api.js';
 import { homeFor, useAuth } from '../context/AuthContext.jsx';
 import { AuthLayout } from '../components/Layout.jsx';

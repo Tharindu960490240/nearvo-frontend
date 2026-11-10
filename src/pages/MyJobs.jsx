@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, ClipboardList, FilePlus2, HardHat, MapPin, ReceiptText } from 'lucide-react';
+import {
+  LuChevronRight as ChevronRight,
+  LuClipboardList as ClipboardList,
+  LuFilePlus2 as FilePlus2,
+  LuHardHat as HardHat,
+  LuMapPin as MapPin,
+  LuReceiptText as ReceiptText,
+} from 'react-icons/lu';
 import { api, timeAgo } from '../api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { CategoryTile } from '../components/CategoryIcon.jsx';

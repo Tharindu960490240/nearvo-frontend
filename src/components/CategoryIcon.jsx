@@ -1,8 +1,21 @@
 import {
-  GraduationCap, Grid3x3, Hammer, House, KeyRound, Leaf, Paintbrush, Ruler, Snowflake, Sparkles, Store, Truck, Wrench, Zap,
-} from 'lucide-react';
+  LuGraduationCap as GraduationCap,
+  LuGrid3X3 as Grid3x3,
+  LuHammer as Hammer,
+  LuHouse as House,
+  LuKeyRound as KeyRound,
+  LuLeaf as Leaf,
+  LuPaintbrush as Paintbrush,
+  LuRuler as Ruler,
+  LuSnowflake as Snowflake,
+  LuSparkles as Sparkles,
+  LuStore as Store,
+  LuTruck as Truck,
+  LuWrench as Wrench,
+  LuZap as Zap,
+} from 'react-icons/lu';
 
-// lucide icon name (stored in categories.icon) -> [icon, colour, soft background]
+// Icon name stored in categories.icon (Lucide names, rendered with react-icons/lu) -> [icon, colour, soft background]
 const ICONS = {
   wrench: [Wrench, '#0277bd', '#e1f3fd'],
   zap: [Zap, '#b7791f', '#fff7db'],
@@ -27,9 +40,10 @@ export function CategoryIcon({ icon, size = 18, ...props }) {
 
 /** Rounded, tinted tile showing the trade's icon. */
 export function CategoryTile({ icon, size = 48 }) {
-  const [Icon, color, bg] = ICONS[icon] || FALLBACK;
+  const [Icon, color] = ICONS[icon] || FALLBACK;
+  // Tint made from the icon colour so it works in light and dark mode.
   return (
-    <span className="tile" style={{ width: size, height: size, color, background: bg, borderRadius: size > 60 ? 18 : 12 }}>
+    <span className="tile cat-tile" style={{ width: size, height: size, '--cat': color, borderRadius: size > 60 ? 18 : 12 }}>
       <Icon size={Math.round(size * 0.48)} />
     </span>
   );

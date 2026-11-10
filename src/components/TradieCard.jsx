@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Navigation } from 'lucide-react';
+import { LuMapPin as MapPin, LuNavigation as Navigation } from 'react-icons/lu';
 import { CategoryIcon } from './CategoryIcon.jsx';
 import { AbnBadge, TradieAvatar } from './TradieBits.jsx';
 import { Stars } from './ui.jsx';

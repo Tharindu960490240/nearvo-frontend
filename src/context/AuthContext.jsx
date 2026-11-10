@@ -3,8 +3,9 @@ import { api, TOKEN_KEY } from '../api.js';
 
 const AuthContext = createContext(null);
 
+// Everyone lands on their dashboard (AFC style); new tradies go straight to finishing their profile.
 export const homeFor = (user) =>
-  !user ? '/' : user.role === 'admin' ? '/admin' : user.role === 'tradie' ? (user.profile_complete ? '/tradie' : '/tradie/profile') : '/my-jobs';
+  !user ? '/' : user.role === 'tradie' && !user.profile_complete ? '/tradie/profile' : '/dashboard';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

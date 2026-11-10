@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Flag } from 'lucide-react';
+import { LuFlag as Flag } from 'react-icons/lu';
 import { api } from '../api.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Alert, Field, Modal, Spinner, useToast } from './ui.jsx';
+import { Alert, Modal, Spinner, TextInput, useToast } from './ui.jsx';
 
 export const REPORT_REASONS = [
   ['defamatory', 'False or defamatory (untrue claims that harm someone)'],
@@ -39,19 +39,13 @@ export function ReportForm({ targetType = 'other', targetId = null, onDone, onCa
 
   return (
     <form className="stack" onSubmit={submit}>
-      <Field label="What's the problem?" required htmlFor="reason">
-        <select id="reason" className="select" required value={form.reason} onChange={set('reason')}>
-          <option value="">Choose a reason…</option>
-          {REPORT_REASONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-        </select>
-      </Field>
-      <Field label="Details" required help="Tell us what is wrong and, if it's about you or your business, why." htmlFor="details">
-        <textarea id="details" className="textarea" required minLength={15} value={form.details} onChange={set('details')} />
-      </Field>
+      <TextInput id="reason" label="What's the problem?" required value={form.reason} onChange={set('reason')} options={REPORT_REASONS} />
+      <TextInput id="details" label="Details" required multiline minRows={4} minLength={15} value={form.details} onChange={set('details')}
+        help="Tell us what is wrong and, if it's about you or your business, why." />
       {!user && (
-        <div className="grid grid-2">
-          <Field label="Your name" required htmlFor="rname"><input id="rname" className="input" required value={form.name} onChange={set('name')} /></Field>
-          <Field label="Your email" required htmlFor="remail"><input id="remail" type="email" className="input" required value={form.email} onChange={set('email')} /></Field>
+        <div className="form-row">
+          <TextInput id="rname" label="Your name" required value={form.name} onChange={set('name')} autoComplete="name" />
+          <TextInput id="remail" label="Your email" type="email" required value={form.email} onChange={set('email')} autoComplete="email" />
         </div>
       )}
       {error && <Alert type="error">{error}</Alert>}

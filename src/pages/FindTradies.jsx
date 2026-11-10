@@ -1,13 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { FilePlus2, List, LocateFixed, Map as MapIcon, UserRoundSearch, X } from 'lucide-react';
+import {
+  LuFilePlus2 as FilePlus2,
+  LuList as List,
+  LuLocateFixed as LocateFixed,
+  LuMap as MapIcon,
+  LuUserRoundSearch as UserRoundSearch,
+  LuX as X,
+} from 'react-icons/lu';
 import { api, getCurrentPosition } from '../api.js';
 import { STATES, localityLabel, stateName } from '../australia.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import TradieCard from '../components/TradieCard.jsx';
 import LocationInput from '../components/LocationInput.jsx';
 import MapView from '../components/MapView.jsx';
-import { Alert, Empty, Field, Skeleton } from '../components/ui.jsx';
+import { Alert, Empty, Skeleton, TextInput } from '../components/ui.jsx';
 
 const useIsDesktop = () => {
   const [d, setD] = useState(() => window.matchMedia('(min-width: 901px)').matches);
@@ -77,37 +84,23 @@ export default function FindTradies() {
 
   return (
     <>
-      <div style={{ background: '#fff', borderBottom: '1px solid var(--line)', padding: '20px 0' }}>
+      <div style={{ background: 'var(--card-color)', borderBottom: '1px solid var(--border-color)', padding: '20px 0' }}>
         <div className="container container-wide">
-          <div className="grid" style={{ gridTemplateColumns: isDesktop ? '240px minmax(0, 420px) auto auto auto' : '1fr', alignItems: 'end', gap: 12 }}>
-            <Field label="Trade" htmlFor="trade">
-              <select id="trade" className="select" value={slug} onChange={(e) => update({ category: e.target.value })}>
-                <option value="">All trades</option>
-                {categories.map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
-              </select>
-            </Field>
-            <Field label="Job location" htmlFor="loc"><LocationInput id="loc" value={near} onSelect={setPlace} /></Field>
+          <div className="grid" style={{ gridTemplateColumns: isDesktop ? '240px minmax(0, 420px) auto auto auto' : '1fr', alignItems: 'start', gap: 12 }}>
+            <TextInput id="trade" label="Trade" value={slug} onChange={(e) => update({ category: e.target.value })}
+              options={[['', 'All trades'], ...categories.map((c) => [c.slug, c.name])]} />
+            <LocationInput id="loc" label="Job location" value={near} onSelect={setPlace} />
             {!hasLoc && (
-              <>
-                <Field label="State" htmlFor="state">
-                  <select id="state" className="select" value={state || ''} onChange={(e) => update({ state: e.target.value })}>
-                    <option value="">All of Australia</option>
-                    {STATES.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
-                  </select>
-                </Field>
-              </>
+              <TextInput id="state" label="State" value={state || ''} onChange={(e) => update({ state: e.target.value })}
+                options={[['', 'All of Australia'], ...STATES.map((s) => [s.code, s.name])]} />
             )}
-            <Field label="Sort by" htmlFor="sort">
-              <select id="sort" className="select" value={params.get('sort') || ''} onChange={(e) => update({ sort: e.target.value })}>
-                <option value="">{hasLoc ? 'Nearest first' : 'Best rated'}</option>
-                {hasLoc && <option value="distance">Nearest first</option>}
-                <option value="rating">Best rated</option>
-                <option value="price">Lowest price</option>
-                <option value="experience">Most experienced</option>
-                <option value="newest">Newest on Nearvo</option>
-              </select>
-            </Field>
-            {!hasLoc && <button className="btn btn-outline" style={{ height: 46 }} onClick={useMyLocation}><LocateFixed size={17} />Use my location</button>}
+            <TextInput id="sort" label="Sort by" value={params.get('sort') || ''} onChange={(e) => update({ sort: e.target.value })}
+              options={[
+                ['', hasLoc ? 'Nearest first' : 'Best rated'],
+                ...(hasLoc ? [['distance', 'Nearest first (distance)']] : []),
+                ['rating', 'Best rated'], ['price', 'Lowest price'], ['experience', 'Most experienced'], ['newest', 'Newest on Nearvo'],
+              ]} />
+            {!hasLoc && <button className="btn btn-outline" style={{ height: 56 }} onClick={useMyLocation}><LocateFixed size={17} />Use my location</button>}
           </div>
         </div>
       </div>

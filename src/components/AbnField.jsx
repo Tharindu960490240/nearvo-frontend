@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { BadgeCheck, Building2, CircleAlert, CircleCheck } from 'lucide-react';
+import {
+  LuBadgeCheck as BadgeCheck,
+  LuBuilding2 as Building2,
+  LuCircleAlert as CircleAlert,
+  LuCircleCheck as CircleCheck,
+} from 'react-icons/lu';
 import { api } from '../api.js';
 import { formatAbn } from '../australia.js';
-import { Spinner } from './ui.jsx';
+import { Alert, Spinner, TextInput } from './ui.jsx';
 
 const digits = (s) => String(s || '').replace(/[\s-]/g, '');
 
@@ -42,36 +47,26 @@ export default function AbnField({ value, onChange, onResult, confirmed, require
     : 'We check this with the Australian Business Register';
 
   return (
-    <div className="field">
-      <label htmlFor="abn">{label}{required && <span className="req">*</span>}</label>
-      <div className="input-wrap">
-        <span className="input-icon"><Building2 size={18} /></span>
-        <input id="abn" className={`input has-end ${state === 'error' ? 'invalid' : state === 'ok' ? 'valid' : ''}`}
-          value={value} onChange={(e) => onChange(e.target.value)} inputMode="numeric" autoComplete="off" placeholder="e.g. 51 824 753 556" />
-        <span className="input-end">
-          {state === 'loading' && <Spinner small />}
-          {state === 'ok' && <CircleCheck size={20} color="var(--teal)" />}
-          {state === 'error' && <CircleAlert size={20} color="var(--red)" />}
-        </span>
-      </div>
-      <span className={`help ${state === 'error' ? 'error' : ''}`}>{help}</span>
+    <div className="stack-sm">
+      <TextInput id="abn" label={label} required={required} icon={Building2} value={value} onChange={(e) => onChange(e.target.value)}
+        inputMode="numeric" autoComplete="off" placeholder="e.g. 51 824 753 556" error={state === 'error' ? error : ''}
+        help={state === 'error' ? undefined : help} color={state === 'ok' ? 'success' : 'primary'} focused={state === 'ok' ? true : undefined}
+        end={state === 'loading' ? <Spinner small /> : state === 'ok' ? <CircleCheck size={20} color="var(--on-teal)" />
+          : state === 'error' ? <CircleAlert size={20} color="var(--on-red)" /> : null} />
       {state === 'ok' && result && (
-        <div className="alert alert-success" style={{ padding: '10px 14px' }}>
-          <BadgeCheck size={20} />
-          <div className="alert-body">
-            {result.source === 'checksum' || result.source === 'demo' ? (
-              <span className="small">ABN format is valid{result.source === 'checksum' ? " (live ABN Lookup isn't set up on this server yet)" : ''}.</span>
-            ) : (
-              <>
-                <div className="bold">{result.entity_name}</div>
-                <div className="tiny">
-                  ABN {formatAbn(result.abn)} · {result.status}{result.gst_registered ? ' · GST registered' : ''}{result.state ? ` · ${result.state} ${result.postcode || ''}` : ''}
-                </div>
-                {result.business_names?.length > 0 && <div className="tiny">Trading as: {result.business_names.slice(0, 3).join(', ')}</div>}
-              </>
-            )}
-          </div>
-        </div>
+        <Alert type="success" icon={BadgeCheck}>
+          {result.source === 'checksum' || result.source === 'demo' ? (
+            <span className="small">ABN format is valid{result.source === 'checksum' ? " (live ABN Lookup isn't set up on this server yet)" : ''}.</span>
+          ) : (
+            <>
+              <div className="bold">{result.entity_name}</div>
+              <div className="tiny">
+                ABN {formatAbn(result.abn)} · {result.status}{result.gst_registered ? ' · GST registered' : ''}{result.state ? ` · ${result.state} ${result.postcode || ''}` : ''}
+              </div>
+              {result.business_names?.length > 0 && <div className="tiny">Trading as: {result.business_names.slice(0, 3).join(', ')}</div>}
+            </>
+          )}
+        </Alert>
       )}
     </div>
   );

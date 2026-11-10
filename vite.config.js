@@ -8,7 +8,8 @@ export default defineConfig({
       output: {
         manualChunks: {
           react: ['react', 'react-dom', 'react-router-dom'],
-          icons: ['lucide-react'],
+          icons: ['react-icons/lu'],
+          mui: ['@mui/material', '@emotion/react', '@emotion/styled'],
           map: ['leaflet', 'react-leaflet'],
         },
       },

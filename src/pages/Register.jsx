@@ -1,10 +1,18 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { HardHat, House, Mail, Phone, Store, User, UserPlus } from 'lucide-react';
+import {
+  LuHardHat as HardHat,
+  LuHouse as House,
+  LuMail as Mail,
+  LuPhone as Phone,
+  LuStore as Store,
+  LuUser as User,
+  LuUserPlus as UserPlus,
+} from 'react-icons/lu';
 import { homeFor, useAuth } from '../context/AuthContext.jsx';
 import { AuthLayout } from '../components/Layout.jsx';
 import AbnField from '../components/AbnField.jsx';
-import { Alert, Field, IconInput, PasswordInput, Spinner } from '../components/ui.jsx';
+import { Alert, CheckboxField, PasswordInput, Spinner, TextInput } from '../components/ui.jsx';
 
 export default function Register() {
   const { register } = useAuth();
@@ -46,36 +54,28 @@ export default function Register() {
       <form className="stack" onSubmit={submit}>
         <div className="grid grid-2" style={{ gap: 10 }}>
           <button type="button" className={`choice ${role === 'customer' ? 'selected' : ''}`} onClick={() => setRole('customer')}>
-            <House size={22} color={role === 'customer' ? 'var(--blue)' : 'var(--slate)'} />
+            <House size={22} color={role === 'customer' ? 'var(--brand)' : 'var(--muted-color)'} />
             <span><span className="bold">I need a tradie</span><br /><span className="tiny muted">Post jobs & get quotes</span></span>
           </button>
           <button type="button" className={`choice ${role === 'tradie' ? 'selected' : ''}`} onClick={() => setRole('tradie')}>
-            <HardHat size={22} color={role === 'tradie' ? 'var(--blue)' : 'var(--slate)'} />
+            <HardHat size={22} color={role === 'tradie' ? 'var(--brand)' : 'var(--muted-color)'} />
             <span><span className="bold">I'm a tradie</span><br /><span className="tiny muted">Find jobs & send quotes</span></span>
           </button>
         </div>
 
-        <Field label="Full name" required htmlFor="name"><IconInput icon={User} id="name" required autoComplete="name" value={form.name} onChange={set('name')} /></Field>
+        <TextInput label="Full name" icon={User} id="name" required autoComplete="name" value={form.name} onChange={set('name')} />
         {role === 'tradie' && (
           <>
             <AbnField value={form.abn} onChange={(v) => setForm((f) => ({ ...f, abn: v }))} onResult={onAbr} />
-            <Field label="Business name" htmlFor="bname" help="The name customers will see. You can change this later.">
-              <IconInput icon={Store} id="bname" value={form.business_name} onChange={set('business_name')} />
-            </Field>
+            <TextInput label="Business name" help="The name customers will see. You can change this later." icon={Store} id="bname" value={form.business_name} onChange={set('business_name')} />
           </>
         )}
-        <Field label="Email" required htmlFor="email"><IconInput icon={Mail} id="email" type="email" required autoComplete="email" value={form.email} onChange={set('email')} /></Field>
-        <Field label={role === 'tradie' ? 'Mobile number' : 'Mobile number (optional)'} required={role === 'tradie'} htmlFor="phone"
-          help={role === 'tradie' ? 'Shared only with customers who hire you' : 'Shared only with the tradie you hire'}>
-          <IconInput icon={Phone} id="phone" type="tel" required={role === 'tradie'} autoComplete="tel" placeholder="0412 345 678" value={form.phone} onChange={set('phone')} />
-        </Field>
-        <Field label="Password" required htmlFor="password" help="At least 8 characters">
-          <PasswordInput id="password" autoComplete="new-password" minLength={8} value={form.password} onChange={set('password')} />
-        </Field>
-        <label className="checkbox">
-          <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+        <TextInput label="Email" icon={Mail} id="email" type="email" required autoComplete="email" value={form.email} onChange={set('email')} />
+        <TextInput label={role === 'tradie' ? 'Mobile number' : 'Mobile number (optional)'} help={role === 'tradie' ? 'Shared only with customers who hire you' : 'Shared only with the tradie you hire'} icon={Phone} id="phone" type="tel" required={role === 'tradie'} autoComplete="tel" placeholder="0412 345 678" value={form.phone} onChange={set('phone')} />
+        <PasswordInput label="Password" help="At least 8 characters" required id="password" autoComplete="new-password" minLength={8} value={form.password} onChange={set('password')} />
+        <CheckboxField id="agree" checked={agree} onChange={setAgree}>
           <span>I agree to the <Link to="/terms" target="_blank">Terms of Use</Link> and <Link to="/privacy" target="_blank">Privacy Policy</Link>{role === 'tradie' ? ', and confirm I hold any licences and insurance my work legally requires' : ''}.</span>
-        </label>
+        </CheckboxField>
         {error && <Alert type="error">{error}</Alert>}
         <button className="btn btn-primary btn-lg btn-block" disabled={busy || (role === 'tradie' && !abr) || !agree}>
           {busy && <Spinner small white />}{role === 'tradie' ? 'Join as a tradie' : 'Sign up'}

@@ -11,15 +11,21 @@ import './styles.css';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { ToastProvider } from './components/ui.jsx';
+import { ThemeModeProvider } from './context/ThemeContext.jsx';
+import { StyledEngineProvider } from '@mui/material/styles';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <ToastProvider>
-          <App />
-        </ToastProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <StyledEngineProvider injectFirst>
+      <ThemeModeProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <ToastProvider>
+              <App />
+            </ToastProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </ThemeModeProvider>
+    </StyledEngineProvider>
   </React.StrictMode>
 );

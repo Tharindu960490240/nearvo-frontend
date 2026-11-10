@@ -1,17 +1,30 @@
+import InputAdornment from '@mui/material/InputAdornment';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
-  ArrowLeft, CircleCheck, Clock, DollarSign, Handshake, Hourglass, Mail, MapPin, Navigation, PartyPopper, Phone, ReceiptText, Star,
-} from 'lucide-react';
+  LuArrowLeft as ArrowLeft,
+  LuCircleCheck as CircleCheck,
+  LuClock as Clock,
+  LuDollarSign as DollarSign,
+  LuHandshake as Handshake,
+  LuHourglass as Hourglass,
+  LuMail as Mail,
+  LuMapPin as MapPin,
+  LuNavigation as Navigation,
+  LuPartyPopper as PartyPopper,
+  LuPhone as Phone,
+  LuReceiptText as ReceiptText,
+  LuStar as Star,
+} from 'react-icons/lu';
 import { api, formatDistance, money, timeAgo } from '../api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { CategoryTile } from '../components/CategoryIcon.jsx';
 import { AMOUNT_TYPE_LABEL, AbnBadge, JobStatusChip, QuoteStatusChip, TradieAvatar } from '../components/TradieBits.jsx';
 import ReportButton from '../components/ReportDialog.jsx';
-import { Alert, ConfirmDialog, Empty, Field, LoadingPage, Spinner, StarInput, Stars, Stepper, useToast } from '../components/ui.jsx';
+import { Alert, ConfirmDialog, Empty, LoadingPage, Spinner, StarInput, Stars, Stepper, TextInput, useToast } from '../components/ui.jsx';
 
 const telHref = (p) => `tel:${p.replace(/[^\d+]/g, '')}`;
-const STEP = { open: 1, assigned: 2, completed: 3 };
+const STEP = { open: 1, assigned: 2, completed: 4 };
 
 function ContactCard({ title, person, note }) {
   return (
@@ -85,7 +98,7 @@ function ReviewForm({ jobId, tradieName, onDone }) {
       <div className="row"><Star size={22} color="var(--amber)" fill="var(--amber)" /><h3>How did {tradieName} go?</h3></div>
       <p className="small muted">Your honest review helps other Aussies choose the right tradie. Stick to facts about your own experience.</p>
       <StarInput value={rating} onChange={setRating} />
-      <textarea className="textarea" placeholder="What went well? Anything they could improve?" value={comment} onChange={(e) => setComment(e.target.value)} />
+      <TextInput id="review-comment" label="Your review" multiline minRows={3} placeholder="What went well? Anything they could improve?" value={comment} onChange={(e) => setComment(e.target.value)} />
       {error && <Alert type="error">{error}</Alert>}
       <div><button className="btn btn-primary" disabled={saving}>{saving && <Spinner small white />}Post review</button></div>
     </form>
@@ -132,24 +145,17 @@ function QuoteForm({ job, onDone }) {
   if (!job.can_quote) return null;
 
   return (
-    <form className="card card-pad stack" style={{ borderColor: 'var(--blue)', borderWidth: 2 }} onSubmit={submit}>
+    <form className="card card-pad stack" style={{ borderColor: 'var(--brand)', borderWidth: 2 }} onSubmit={submit}>
       <div className="row"><ReceiptText size={22} color="var(--blue)" /><h3>Send a quote</h3></div>
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1fr) 160px' }}>
-        <Field label="Price" required htmlFor="amount">
-          <div className="prefix-wrap"><span className="prefix">$</span>
-            <input id="amount" type="number" min="1" step="0.01" required className="input" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
-          </div>
-        </Field>
-        <Field label="Type" htmlFor="atype">
-          <select id="atype" className="select" value={form.amount_type} onChange={(e) => setForm({ ...form, amount_type: e.target.value })}>
-            <option value="fixed">Fixed price</option><option value="per hour">Per hour</option><option value="estimate">Estimate</option>
-          </select>
-        </Field>
+        <TextInput id="amount" label="Price" type="number" min="1" step="0.01" required value={form.amount}
+          onChange={(e) => setForm({ ...form, amount: e.target.value })}
+          slotProps={{ input: { startAdornment: <InputAdornment position="start">$</InputAdornment> } }} />
+        <TextInput id="atype" label="Type" value={form.amount_type} onChange={(e) => setForm({ ...form, amount_type: e.target.value })}
+          options={[['fixed', 'Fixed price'], ['per hour', 'Per hour'], ['estimate', 'Estimate']]} />
       </div>
-      <Field label="Message to the customer" required htmlFor="msg">
-        <textarea id="msg" required className="textarea" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })}
+      <TextInput label="Message to the customer" multiline minRows={4} id="msg" required value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })}
           placeholder="What's included, when you're available, and why you're a good fit." />
-      </Field>
       {error && <Alert type="error" action={/profile|ABN/i.test(error) ? <Link to="/tradie/profile" className="btn btn-sm btn-outline">Profile</Link> : null}>{error}</Alert>}
       <div className="row">
         <button className="btn btn-primary btn-lg" disabled={saving}>{saving && <Spinner small white />}{mine ? 'Update quote' : 'Send quote'}</button>

@@ -1,12 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, CircleCheck, Info, Send } from 'lucide-react';
+import {
+  LuArrowLeft as ArrowLeft,
+  LuArrowRight as ArrowRight,
+  LuCircleCheck as CircleCheck,
+  LuInfo as Info,
+  LuSend as Send,
+} from 'react-icons/lu';
 import { api } from '../api.js';
 import { localityLabel } from '../australia.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import LocationInput from '../components/LocationInput.jsx';
 import { CategoryTile } from '../components/CategoryIcon.jsx';
-import { Alert, Field, Spinner, Stepper } from '../components/ui.jsx';
+import { Alert, Spinner, Stepper, TextInput } from '../components/ui.jsx';
 
 const STEPS = ['Trade', 'Job details', 'Location & timing'];
 
@@ -109,33 +115,20 @@ export default function PostJob() {
               {category && <CategoryTile icon={category.icon} size={40} />}
               <h3>Tell {category ? `the ${category.name.toLowerCase()}` : 'tradies'} about the job</h3>
             </div>
-            <Field label="Job title" required htmlFor="title" help="A short summary tradies will see first">
-              <input id="title" className="input" maxLength={150} value={form.title} onChange={set('title')} placeholder="e.g. Fix leaking kitchen tap" />
-            </Field>
-            <Field label="Describe the job" required htmlFor="desc" help={`${form.description.trim().length} characters · at least 20. Don't include your phone number or street address here.`}>
-              <textarea id="desc" className="textarea" rows={6} value={form.description} onChange={set('description')}
+            <TextInput label="Job title" help="A short summary tradies will see first" required id="title" maxLength={150} value={form.title} onChange={set('title')} placeholder="e.g. Fix leaking kitchen tap" />
+            <TextInput label="Describe the job" help={`${form.description.trim().length} characters · at least 20. Don't include your phone number or street address here.`} required multiline minRows={6} id="desc" value={form.description} onChange={set('description')}
                 placeholder="What needs doing? Include sizes, materials, access details and anything else that helps tradies quote accurately." />
-            </Field>
           </div>
         )}
 
         {step === 2 && (
           <div className="stack">
             <h3>Where and when?</h3>
-            <Field label="Job suburb or postcode" required htmlFor="sub" help="Only your suburb is shown to tradies. You share your address with the tradie you hire.">
-              <LocationInput id="sub" value={place ? localityLabel(place) : ''} onSelect={setPlace} label="Job suburb or postcode" />
-            </Field>
-            <div className="grid grid-2">
-              <Field label="When do you need it done?" htmlFor="timing">
-                <select id="timing" className="select" value={form.timing} onChange={set('timing')}>
-                  {options.timings.map((t) => <option key={t}>{t}</option>)}
-                </select>
-              </Field>
-              <Field label="Rough budget" htmlFor="budget">
-                <select id="budget" className="select" value={form.budget} onChange={set('budget')}>
-                  {options.budgets.map((b) => <option key={b}>{b}</option>)}
-                </select>
-              </Field>
+            <LocationInput id="sub" required value={place ? localityLabel(place) : ''} onSelect={setPlace} label="Job suburb or postcode"
+              help="Only your suburb is shown to tradies. You share your address with the tradie you hire." />
+            <div className="form-row">
+              <TextInput id="timing" label="When do you need it done?" value={form.timing} onChange={set('timing')} options={options.timings.map((t) => [t, t])} />
+              <TextInput id="budget" label="Rough budget" value={form.budget} onChange={set('budget')} options={options.budgets.map((b) => [b, b])} />
             </div>
             <div className="panel">
               <div className="eyebrow">Summary</div>

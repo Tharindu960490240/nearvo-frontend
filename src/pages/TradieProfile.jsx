@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { BadgeCheck, Building2, Calendar, CircleCheck, History, Info, MapPin, ReceiptText, Star } from 'lucide-react';
+import {
+  LuBadgeCheck as BadgeCheck,
+  LuBuilding2 as Building2,
+  LuCalendar as Calendar,
+  LuCircleCheck as CircleCheck,
+  LuHistory as History,
+  LuInfo as Info,
+  LuMapPin as MapPin,
+  LuReceiptText as ReceiptText,
+  LuStar as Star,
+} from 'react-icons/lu';
 import { api, priceLabel, timeAgo } from '../api.js';
 import { formatAbn } from '../australia.js';
 import { useAuth } from '../context/AuthContext.jsx';

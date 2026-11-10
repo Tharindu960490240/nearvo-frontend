@@ -1,10 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BriefcaseBusiness, CircleCheck, EyeOff, Flag, HardHat, Inbox, Pause, Star, Undo2, Users, X } from 'lucide-react';
+import {
+  LuBriefcaseBusiness as BriefcaseBusiness,
+  LuCircleCheck as CircleCheck,
+  LuEyeOff as EyeOff,
+  LuFlag as Flag,
+  LuHardHat as HardHat,
+  LuInbox as Inbox,
+  LuPause as Pause,
+  LuStar as Star,
+  LuUndo2 as Undo2,
+  LuUsers as Users,
+  LuX as X,
+} from 'react-icons/lu';
 import { api, timeAgo } from '../api.js';
 import { formatAbn } from '../australia.js';
 import { REPORT_REASONS } from '../components/ReportDialog.jsx';
-import { Alert, Empty, Field, LoadingPage, Modal, Spinner, Stars, Stat, Tabs, useToast } from '../components/ui.jsx';
+import { Alert, Empty, LoadingPage, Modal, Spinner, Stars, Stat, Tabs, TextInput, useToast } from '../components/ui.jsx';
 
 const REASON = Object.fromEntries(REPORT_REASONS.map(([k, v]) => [k, v.split(' (')[0]]));
 const ACT_LABEL = { review: ['Hide review', EyeOff], tradie: ['Pause profile', Pause], job: ['Cancel job', X], other: ['Mark handled', CircleCheck] };
@@ -139,7 +151,7 @@ export default function Admin() {
             ? 'The content will be hidden from customers (you can undo this later). The person who reported it will be emailed.'
             : 'The content stays up. Only remove genuine reviews if they break the rules; removing honest negative reviews can mislead customers.'}
         </p>
-        <Field label="Note to the reporter (optional)" htmlFor="note"><textarea id="note" className="textarea" style={{ minHeight: 80 }} value={note} onChange={(e) => setNote(e.target.value)} /></Field>
+        <TextInput label="Note to the reporter (optional)" multiline minRows={4} id="note" value={note} onChange={(e) => setNote(e.target.value)} />
       </Modal>
     </div>
   );
