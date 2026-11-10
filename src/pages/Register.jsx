@@ -12,6 +12,8 @@ import {
 import { homeFor, useAuth } from '../context/AuthContext.jsx';
 import { AuthLayout } from '../components/Layout.jsx';
 import AbnField from '../components/AbnField.jsx';
+import PasswordRules from '../components/PasswordRules.jsx';
+import { passwordOk } from '../passwordRules.js';
 import { Alert, CheckboxField, PasswordInput, Spinner, TextInput } from '../components/ui.jsx';
 
 export default function Register() {
@@ -36,6 +38,7 @@ export default function Register() {
   const submit = async (e) => {
     e.preventDefault();
     if (role === 'tradie' && !abr) return setError('Please enter an active ABN or ACN. We check it with the Australian Business Register.');
+    if (!passwordOk(form.password)) return setError('Please choose a password that meets all the rules');
     if (!agree) return setError('Please agree to the Terms of Use and Privacy Policy');
     setBusy(true);
     setError('');
@@ -72,12 +75,13 @@ export default function Register() {
         )}
         <TextInput label="Email" icon={Mail} id="email" type="email" required autoComplete="email" value={form.email} onChange={set('email')} />
         <TextInput label={role === 'tradie' ? 'Mobile number' : 'Mobile number (optional)'} help={role === 'tradie' ? 'Shared only with customers who hire you' : 'Shared only with the tradie you hire'} icon={Phone} id="phone" type="tel" required={role === 'tradie'} autoComplete="tel" placeholder="0412 345 678" value={form.phone} onChange={set('phone')} />
-        <PasswordInput label="Password" help="At least 8 characters" required id="password" autoComplete="new-password" minLength={8} value={form.password} onChange={set('password')} />
+        <PasswordInput label="Password" required id="password" autoComplete="new-password" minLength={8} value={form.password} onChange={set('password')} />
+        <PasswordRules password={form.password} />
         <CheckboxField id="agree" checked={agree} onChange={setAgree}>
           <span>I agree to the <Link to="/terms" target="_blank">Terms of Use</Link> and <Link to="/privacy" target="_blank">Privacy Policy</Link>{role === 'tradie' ? ', and confirm I hold any licences and insurance my work legally requires' : ''}.</span>
         </CheckboxField>
         {error && <Alert type="error">{error}</Alert>}
-        <button className="btn btn-primary btn-lg btn-block" disabled={busy || (role === 'tradie' && !abr) || !agree}>
+        <button className="btn btn-primary btn-lg btn-block" disabled={busy || (role === 'tradie' && !abr) || !agree || !passwordOk(form.password)}>
           {busy && <Spinner small white />}{role === 'tradie' ? 'Join as a tradie' : 'Sign up'}
         </button>
         <p className="small muted center">Already have an account? <Link to="/login" state={location.state} className="bold">Log in</Link></p>

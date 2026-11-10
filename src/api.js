@@ -1,4 +1,10 @@
-const BASE = import.meta.env.VITE_API_URL || '/api';
+// API address. Forgiving about the setting: a trailing "/" is removed and "/api" is added to a
+// full backend address that leaves it out (e.g. https://nearvo-backend.vercel.app -> .../api).
+const BASE = (() => {
+  let b = String(import.meta.env.VITE_API_URL || '/api').trim().replace(/\/+$/, '');
+  if (/^https?:\/\//i.test(b) && !/\/api$/i.test(b)) b += '/api';
+  return b || '/api';
+})();
 // Where uploaded profile photos are served (the API host). Empty = same origin (Vite proxies /uploads in dev).
 export const FILES_BASE = import.meta.env.VITE_FILES_URL || '';
 export const TOKEN_KEY = 'nearvo_token';
