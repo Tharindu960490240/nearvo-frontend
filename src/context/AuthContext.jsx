@@ -21,6 +21,15 @@ export function AuthProvider({ children }) {
     refresh().catch(() => localStorage.removeItem(TOKEN_KEY)).finally(() => setLoading(false));
   }, [refresh]);
 
+  useEffect(() => {
+    const onSignedOut = () => setUser(null);
+    window.addEventListener('nearvo:signed-out', onSignedOut);
+    return () => window.removeEventListener('nearvo:signed-out', onSignedOut);
+  }, []);
+
+  /** Keeps the user signed in after changing their password (older log-ins stop working). */
+  const replaceToken = (token) => localStorage.setItem(TOKEN_KEY, token);
+
   const handleAuth = ({ token, user: u }) => {
     localStorage.setItem(TOKEN_KEY, token);
     setUser(u);
@@ -34,7 +43,7 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  return <AuthContext.Provider value={{ user, loading, login, register, logout, refresh }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, loading, login, register, logout, refresh, replaceToken }}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);

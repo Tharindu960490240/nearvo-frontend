@@ -14,6 +14,7 @@ import {
   LuUsers as Users,
 } from 'react-icons/lu';
 import { api } from '../api.js';
+import AdminAlerts from '../components/AdminAlerts.jsx';
 import { Alert, Stat } from '../components/ui.jsx';
 import { navFor, ROLE_LABELS } from '../const/navigation.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -89,6 +90,8 @@ export default function Dashboard() {
           {stats.map((s) => <Stat key={s.label} {...s} />)}
         </div>
       )}
+
+      {user.role === 'admin' && <AdminAlerts />}
 
       <div className="dashboard-grid">
         {cards.map((c) => (

@@ -13,6 +13,9 @@ import {
   LuTruck as Truck,
   LuWrench as Wrench,
   LuZap as Zap,
+  LuBug, LuDroplets, LuShield, LuSun, LuTreePine, LuCar, LuFlame, LuBrickWall, LuFence, LuSofa, LuBath, LuPlug, LuDog,
+  LuWaves, LuCamera, LuScissors, LuShowerHead, LuHardHat, LuDoorOpen, LuLightbulb, LuDrill, LuPaintRoller, LuSprayCan,
+  LuBlinds, LuCctv, LuAntenna, LuFan,
 } from 'react-icons/lu';
 
 // Icon name stored in categories.icon (Lucide names, rendered with react-icons/lu) -> [icon, colour, soft background]
@@ -30,7 +33,19 @@ const ICONS = {
   snowflake: [Snowflake, '#0288d1', '#e3f4fd'],
   truck: [Truck, '#e65100', '#fff0e0'],
   'graduation-cap': [GraduationCap, '#3949ab', '#e8eaf8'],
+  // Extra icons an admin can pick for new trades (must match nearvo-backend/src/lib/icons.js)
+  bug: [LuBug, '#6d4c41'], droplets: [LuDroplets, '#0277bd'], shield: [LuShield, '#455a64'], sun: [LuSun, '#e09100'],
+  'tree-pine': [LuTreePine, '#2e7d32'], car: [LuCar, '#c62828'], flame: [LuFlame, '#e65100'], 'brick-wall': [LuBrickWall, '#a1462a'],
+  fence: [LuFence, '#795548'], sofa: [LuSofa, '#7b1fa2'], bath: [LuBath, '#00838f'], plug: [LuPlug, '#5d4037'],
+  dog: [LuDog, '#8d6e63'], waves: [LuWaves, '#0288d1'], camera: [LuCamera, '#37474f'], scissors: [LuScissors, '#ad1457'],
+  'shower-head': [LuShowerHead, '#00796b'], 'hard-hat': [LuHardHat, '#ef6c00'], 'door-open': [LuDoorOpen, '#6d4c41'],
+  lightbulb: [LuLightbulb, '#f9a825'], drill: [LuDrill, '#455a64'], 'paint-roller': [LuPaintRoller, '#c2185b'],
+  'spray-can': [LuSprayCan, '#00897b'], blinds: [LuBlinds, '#5e35b1'], cctv: [LuCctv, '#37474f'], antenna: [LuAntenna, '#1565c0'],
+  fan: [LuFan, '#0097a7'],
 };
+
+/** Icon names an admin can choose from (same order as the server's list). */
+export const CATEGORY_ICON_KEYS = Object.keys(ICONS);
 const FALLBACK = [Store, '#0288d1', '#e1f3fd'];
 
 export function CategoryIcon({ icon, size = 18, ...props }) {

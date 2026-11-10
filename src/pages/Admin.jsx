@@ -96,7 +96,7 @@ export default function Admin() {
 
   return (
     <div className="container page">
-      <h1>Admin</h1>
+      <h1>Reports</h1>
       <p className="muted mb-lg">Reports and complaints. Most days there's nothing to do. Aim to handle each report within 7 days.</p>
       {error && <Alert type="error" className="mb">{error}</Alert>}
 

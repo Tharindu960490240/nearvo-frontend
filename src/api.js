@@ -20,6 +20,11 @@ async function handle(res) {
     const err = new Error(data?.error || `Request failed (${res.status})`);
     err.code = data?.code;
     err.status = res.status;
+    // Account suspended, deleted or password changed elsewhere: sign out everywhere in this browser.
+    if (['ACCOUNT_SUSPENDED', 'ACCOUNT_GONE', 'PASSWORD_CHANGED'].includes(err.code) && localStorage.getItem(TOKEN_KEY)) {
+      localStorage.removeItem(TOKEN_KEY);
+      window.dispatchEvent(new CustomEvent('nearvo:signed-out', { detail: err.message }));
+    }
     throw err;
   }
   return data;

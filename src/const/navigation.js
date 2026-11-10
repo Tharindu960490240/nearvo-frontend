@@ -4,6 +4,7 @@
 //   - home: the dashboard itself (not shown as a card)
 //   - group: small heading shown above the item in the side menu
 import {
+  LuActivity, LuChartColumn, LuMegaphone, LuMessageSquareText, LuTags, LuUsers,
   LuBriefcaseBusiness, LuClipboardList, LuEye, LuFilePlus2, LuFlag, LuLayoutDashboard, LuSquarePen, LuUserRound, LuUserRoundSearch,
 } from 'react-icons/lu';
 
@@ -27,8 +28,14 @@ export const NAV_ITEMS = {
   ],
   admin: [
     dashboard,
-    { icon: LuFlag, label: 'Reports', text: 'Reports and complaints to review.', path: '/admin', group: 'Manage' },
-    { icon: LuUserRoundSearch, label: 'Tradies', text: 'Browse every listed tradie.', path: '/tradies' },
+    { icon: LuFlag, label: 'Reports', text: 'Reports and complaints to review.', path: '/admin/reports', group: 'Manage' },
+    { icon: LuUsers, label: 'Users', text: 'Find anyone; suspend, restore or delete accounts.', path: '/admin/users' },
+    { icon: LuBriefcaseBusiness, label: 'Jobs', text: 'Every job posted; remove spam.', path: '/admin/jobs' },
+    { icon: LuMessageSquareText, label: 'Reviews', text: 'Every review; hide ones that break the rules.', path: '/admin/reviews' },
+    { icon: LuChartColumn, label: 'Insights', text: 'Sign-ups and jobs per week, busiest trades and states.', path: '/admin/insights', group: 'Site' },
+    { icon: LuTags, label: 'Trades', text: 'Add, rename or hide trades.', path: '/admin/trades' },
+    { icon: LuMegaphone, label: 'Site banner', text: 'A message at the top of every page.', path: '/admin/banner' },
+    { icon: LuActivity, label: 'Activity log', text: 'A record of every admin action.', path: '/admin/activity' },
     account,
   ],
 };

@@ -1,7 +1,9 @@
 // My account: name and phone (email shown, verified status). Uses PUT /api/auth/me.
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
+  LuKeyRound as KeyRound,
+  LuTrash2 as Trash2,
   LuMail as Mail,
   LuPhone as Phone,
   LuSave as Save,
@@ -10,10 +12,103 @@ import {
 } from 'react-icons/lu';
 import { api } from '../api.js';
 import { UserAvatar } from '../components/AppShell.jsx';
-import { Alert, Spinner, Switch, TextInput, useToast } from '../components/ui.jsx';
+import PasswordRules from '../components/PasswordRules.jsx';
+import { Alert, Modal, PasswordInput, Spinner, Switch, TextInput, useToast } from '../components/ui.jsx';
+import { passwordOk } from '../passwordRules.js';
 import { ROLE_LABELS } from '../const/navigation.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useThemeMode } from '../context/ThemeContext.jsx';
+
+function ChangePassword() {
+  const { replaceToken } = useAuth();
+  const toast = useToast();
+  const [form, setForm] = useState({ current_password: '', password: '' });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const save = async (e) => {
+    e.preventDefault();
+    if (!passwordOk(form.password)) return setError('Please choose a password that meets all the rules');
+    setBusy(true);
+    setError('');
+    try {
+      const r = await api('/auth/password', { method: 'PUT', body: form });
+      replaceToken(r.token);
+      setForm({ current_password: '', password: '' });
+      toast('Password changed. Other devices have been logged out.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="card card-pad mb">
+      <div className="row mb"><KeyRound size={20} color="var(--brand)" /><h3>Change password</h3></div>
+      <form className="stack" onSubmit={save}>
+        <PasswordInput id="cur-pw" label="Current password" autoComplete="current-password" value={form.current_password}
+          onChange={(e) => setForm({ ...form, current_password: e.target.value })} />
+        <PasswordInput id="new-pw" label="New password" autoComplete="new-password" value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })} />
+        {form.password && <PasswordRules password={form.password} />}
+        {error && <Alert type="error">{error}</Alert>}
+        <div className="row" style={{ justifyContent: 'flex-end' }}>
+          <button className="btn btn-primary" disabled={busy || !form.current_password || !passwordOk(form.password)}>
+            {busy && <Spinner small white />}Change password
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function DeleteAccount() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const toast = useToast();
+  const [open, setOpen] = useState(false);
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const remove = async () => {
+    setBusy(true);
+    setError('');
+    try {
+      await api('/auth/me', { method: 'DELETE', body: { password } });
+      logout();
+      toast('Your account has been deleted. Thanks for using Nearvo.', 'info');
+      navigate('/', { replace: true });
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="card card-pad mb" style={{ borderColor: 'var(--tint-red)' }}>
+      <div className="row-between wrap">
+        <div>
+          <div className="row"><Trash2 size={20} color="var(--on-red)" /><h3>Delete my account</h3></div>
+          <p className="small muted mt-xs">Removes your account and personal details for good.{user.role === 'customer' ? ' Your jobs and reviews are deleted too.' : user.role === 'tradie' ? ' Your profile, quotes and reviews are deleted too.' : ''}</p>
+        </div>
+        <button className="btn btn-danger" onClick={() => { setOpen(true); setPassword(''); setError(''); }}>Delete account</button>
+      </div>
+      <Modal open={open} onClose={() => !busy && setOpen(false)} title="Delete your account?" width={460}
+        actions={<>
+          <button className="btn btn-outline" onClick={() => setOpen(false)} disabled={busy}>Keep my account</button>
+          <button className="btn btn-danger-solid" onClick={remove} disabled={busy || !password}>{busy && <Spinner small white />}Delete for good</button>
+        </>}>
+        <div className="stack">
+          <p className="muted">This can't be undone. Enter your password to confirm.</p>
+          <PasswordInput id="del-pw" label="Password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          {error && <Alert type="error">{error}</Alert>}
+        </div>
+      </Modal>
+    </div>
+  );
+}
 
 export default function Account() {
   const { user, refresh } = useAuth();
@@ -73,12 +168,15 @@ export default function Account() {
         <Switch checked={mode === 'dark'} onChange={toggle}>Dark mode</Switch>
       </div>
 
+      <ChangePassword />
+
       {user.role === 'tradie' && (
-        <div className="card card-pad row-between wrap">
+        <div className="card card-pad row-between wrap mb">
           <div className="row"><ShieldCheck size={20} color="var(--brand)" /><span>ABN, services, prices and service area</span></div>
           <Link to="/tradie/profile" className="btn btn-outline">Edit tradie profile</Link>
         </div>
       )}
+      <DeleteAccount />
     </div>
   );
 }

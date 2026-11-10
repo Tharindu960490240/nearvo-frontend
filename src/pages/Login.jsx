@@ -35,6 +35,7 @@ export default function Login() {
       <form className="stack" onSubmit={(e) => { e.preventDefault(); doLogin(form.email, form.password); }}>
         <TextInput label="Email" icon={Mail} id="email" type="email" required autoComplete="email" autoFocus value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
         <PasswordInput label="Password" id="password" autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+        <div className="right" style={{ marginTop: -8 }}><Link to="/forgot-password" className="small bold">Forgot password?</Link></div>
         {error && <Alert type="error">{error}</Alert>}
         <LoadingSpinner open={busy} text="Signing you in" />
         <button className="btn btn-primary btn-lg btn-block" disabled={busy}>{busy && <Spinner small white />}Log in</button>

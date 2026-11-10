@@ -14,6 +14,15 @@ import MyJobs from './pages/MyJobs.jsx';
 import TradieDashboard from './pages/TradieDashboard.jsx';
 import TradieProfileEdit from './pages/TradieProfileEdit.jsx';
 import Admin from './pages/Admin.jsx';
+import AdminUsers from './pages/admin/AdminUsers.jsx';
+import AdminJobs from './pages/admin/AdminJobs.jsx';
+import AdminReviews from './pages/admin/AdminReviews.jsx';
+import AdminTrades from './pages/admin/AdminTrades.jsx';
+import AdminBanner from './pages/admin/AdminBanner.jsx';
+import AdminActivity from './pages/admin/AdminActivity.jsx';
+import AdminInsights from './pages/admin/AdminInsights.jsx';
+import { ForgotPassword, ResetPassword } from './pages/PasswordReset.jsx';
+import Announcement from './components/Announcement.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Account from './pages/Account.jsx';
 import Login from './pages/Login.jsx';
@@ -55,6 +64,7 @@ export default function App() {
       <div className="app-shell">
         <SideNav />
         <div className="app-main">
+          <Announcement />
           <EmailBanner />
           <main>
         <Routes>
@@ -66,11 +76,21 @@ export default function App() {
           <Route path="/my-jobs" element={<Protected roles={['customer']}><MyJobs /></Protected>} />
           <Route path="/tradie" element={<Protected roles={['tradie']}><TradieDashboard /></Protected>} />
           <Route path="/tradie/profile" element={<Protected roles={['tradie']}><TradieProfileEdit /></Protected>} />
-          <Route path="/admin" element={<Protected roles={['admin']}><Admin /></Protected>} />
+          <Route path="/admin" element={<Navigate to="/admin/reports" replace />} />
+          <Route path="/admin/reports" element={<Protected roles={['admin']}><Admin /></Protected>} />
+          <Route path="/admin/users" element={<Protected roles={['admin']}><AdminUsers /></Protected>} />
+          <Route path="/admin/jobs" element={<Protected roles={['admin']}><AdminJobs /></Protected>} />
+          <Route path="/admin/reviews" element={<Protected roles={['admin']}><AdminReviews /></Protected>} />
+          <Route path="/admin/insights" element={<Protected roles={['admin']}><AdminInsights /></Protected>} />
+          <Route path="/admin/trades" element={<Protected roles={['admin']}><AdminTrades /></Protected>} />
+          <Route path="/admin/banner" element={<Protected roles={['admin']}><AdminBanner /></Protected>} />
+          <Route path="/admin/activity" element={<Protected roles={['admin']}><AdminActivity /></Protected>} />
           <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
           <Route path="/account" element={<Protected><Account /></Protected>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
