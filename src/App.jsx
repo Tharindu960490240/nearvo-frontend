@@ -1,75 +1,106 @@
-import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Box, Button, Typography } from "@mui/material";
-import { I18nProvider, guessLang, tl } from "./i18n/index.jsx";
-import { useAuth, useBoot } from "./state/data.jsx";
-import { DialogHost, SnackProvider, LoadingProvider } from "./state/ui.jsx";
-import { InlineLoader } from "./components/LoadingSpinner.jsx";
-import Layout from "./components/Layout.jsx";
-import ErrorBoundary from "./components/ErrorBoundary.jsx";
-import Home from "./pages/Home.jsx";
-import Students from "./pages/Students.jsx";
-import Classes from "./pages/Classes.jsx";
-import Attendance from "./pages/Attendance.jsx";
-import Fees from "./pages/Fees.jsx";
-import Reminders from "./pages/Reminders.jsx";
-import Settings from "./pages/Settings.jsx";
-import Privacy from "./pages/Privacy.jsx";
-import Admin from "./pages/Admin.jsx";
-import Auth, { ResetPassword } from "./pages/Auth.jsx";
-import { CloudOffRounded } from "./icons.jsx";
+import { useEffect } from 'react';
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { LuMapPinX as MapPinX } from 'react-icons/lu';
+import { EmailBanner, Footer } from './components/Layout.jsx';
+import { SideNav, TopHeader } from './components/AppShell.jsx';
+import { LoadingPage } from './components/ui.jsx';
+import { homeFor, useAuth } from './context/AuthContext.jsx';
+import Home from './pages/Home.jsx';
+import FindTradies from './pages/FindTradies.jsx';
+import TradieProfile from './pages/TradieProfile.jsx';
+import PostJob from './pages/PostJob.jsx';
+import JobDetail from './pages/JobDetail.jsx';
+import MyJobs from './pages/MyJobs.jsx';
+import TradieDashboard from './pages/TradieDashboard.jsx';
+import TradieProfileEdit from './pages/TradieProfileEdit.jsx';
+import Admin from './pages/Admin.jsx';
+import AdminUsers from './pages/admin/AdminUsers.jsx';
+import AdminJobs from './pages/admin/AdminJobs.jsx';
+import AdminReviews from './pages/admin/AdminReviews.jsx';
+import AdminTrades from './pages/admin/AdminTrades.jsx';
+import AdminBanner from './pages/admin/AdminBanner.jsx';
+import AdminActivity from './pages/admin/AdminActivity.jsx';
+import AdminInsights from './pages/admin/AdminInsights.jsx';
+import { ForgotPassword, ResetPassword } from './pages/PasswordReset.jsx';
+import Announcement from './components/Announcement.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import Account from './pages/Account.jsx';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
+import VerifyEmail from './pages/VerifyEmail.jsx';
+import { Privacy, ReportPage, Terms } from './pages/Legal.jsx';
+
+function Protected({ roles, children }) {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  if (loading) return <LoadingPage />;
+  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
+  if (roles && !roles.includes(user.role)) return <Navigate to={homeFor(user)} replace />;
+  return children;
+}
+
+function NotFound() {
+  return (
+    <div className="container container-sm page center">
+      <MapPinX size={60} color="var(--brand)" style={{ margin: '0 auto' }} />
+      <h1 className="mt">Page not found</h1>
+      <p className="muted mt-sm mb-lg">We couldn't find what you were looking for.</p>
+      <Link to="/" className="btn btn-primary">Back to home</Link>
+    </div>
+  );
+}
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
 
 export default function App() {
-  const { token } = useAuth();
-  const boot = useBoot();
-  const [preLang, setPreLang] = useState(guessLang);
-  const lang = boot.data?.settings?.lang || preLang;
-  const setLang = l => { setPreLang(l); try { localStorage.setItem("td-lang", l); } catch { /* ignore */ } };
-  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
-
-  let app;
-  if (!token) app = <Auth setLang={setLang} />;
-  else if (boot.isPending) app = <InlineLoader />;
-  else if (boot.isError) app = (
-    <Box sx={{ textAlign: "center", py: 10, px: 2 }}>
-      <CloudOffRounded sx={{ fontSize: 48, color: "primary.main" }} />
-      <Typography variant="h6" sx={{ mt: 1 }}>{tl(lang, "err_title")}</Typography>
-      <Typography color="text.secondary" sx={{ mb: 2 }}>{tl(lang, "err_p")}</Typography>
-      <Button variant="contained" onClick={() => boot.refetch()}>{tl(lang, "try_again")}</Button>
-    </Box>
-  );
-  else app = (
-    <DialogHost>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="students" element={<Students />} />
-          <Route path="classes" element={<Classes />} />
-          <Route path="attendance" element={<Attendance />} />
-          <Route path="fees" element={<Fees />} />
-          <Route path="reminders" element={<Reminders />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="admin" element={boot.data?.user?.isAdmin ? <Admin /> : <Navigate to="/" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </DialogHost>
-  );
   return (
-    <I18nProvider lang={lang}>
-      <ErrorBoundary lang={lang}>
-       <SnackProvider>
-        <LoadingProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/reset-password" element={<ResetPassword setLang={setLang} />} />
-            <Route path="*" element={app} />
-          </Routes>
-        </BrowserRouter>
-        </LoadingProvider>
-       </SnackProvider>
-      </ErrorBoundary>
-    </I18nProvider>
+    <>
+      <ScrollToTop />
+      <TopHeader />
+      <div className="app-shell">
+        <SideNav />
+        <div className="app-main">
+          <Announcement />
+          <EmailBanner />
+          <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/tradies" element={<FindTradies />} />
+          <Route path="/tradies/:id" element={<TradieProfile />} />
+          <Route path="/jobs/new" element={<Protected roles={['customer']}><PostJob /></Protected>} />
+          <Route path="/jobs/:id" element={<Protected><JobDetail /></Protected>} />
+          <Route path="/my-jobs" element={<Protected roles={['customer']}><MyJobs /></Protected>} />
+          <Route path="/tradie" element={<Protected roles={['tradie']}><TradieDashboard /></Protected>} />
+          <Route path="/tradie/profile" element={<Protected roles={['tradie']}><TradieProfileEdit /></Protected>} />
+          <Route path="/admin" element={<Navigate to="/admin/reports" replace />} />
+          <Route path="/admin/reports" element={<Protected roles={['admin']}><Admin /></Protected>} />
+          <Route path="/admin/users" element={<Protected roles={['admin']}><AdminUsers /></Protected>} />
+          <Route path="/admin/jobs" element={<Protected roles={['admin']}><AdminJobs /></Protected>} />
+          <Route path="/admin/reviews" element={<Protected roles={['admin']}><AdminReviews /></Protected>} />
+          <Route path="/admin/insights" element={<Protected roles={['admin']}><AdminInsights /></Protected>} />
+          <Route path="/admin/trades" element={<Protected roles={['admin']}><AdminTrades /></Protected>} />
+          <Route path="/admin/banner" element={<Protected roles={['admin']}><AdminBanner /></Protected>} />
+          <Route path="/admin/activity" element={<Protected roles={['admin']}><AdminActivity /></Protected>} />
+          <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+          <Route path="/account" element={<Protected><Account /></Protected>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/report" element={<ReportPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+          </main>
+          <Footer />
+        </div>
+      </div>
+    </>
   );
 }

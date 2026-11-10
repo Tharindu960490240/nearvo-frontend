@@ -13,7 +13,7 @@ import {
 import { api } from '../api.js';
 import { UserAvatar } from '../components/AppShell.jsx';
 import PasswordRules from '../components/PasswordRules.jsx';
-import { Alert, Modal, PasswordInput, Spinner, Switch, TextInput, showToast, useToast } from '../components/ui.jsx';
+import { Alert, ConfirmPasswordInput, Modal, PasswordInput, Spinner, Switch, TextInput, passwordsMatch, showToast, useToast } from '../components/ui.jsx';
 import { passwordOk, personalHints } from '../passwordRules.js';
 import { ROLE_LABELS } from '../const/navigation.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -23,19 +23,20 @@ function ChangePassword() {
   const { user, replaceToken } = useAuth();
   const hints = personalHints(user.name, user.email.split('@')[0], user.business_name);
   const toast = useToast();
-  const [form, setForm] = useState({ current_password: '', password: '' });
+  const [form, setForm] = useState({ current_password: '', password: '', password_confirm: '' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   const save = async (e) => {
     e.preventDefault();
     if (!passwordOk(form.password, hints)) return setError('Please choose a password that meets all the rules');
+    if (!passwordsMatch(form.password, form.password_confirm)) { showToast("The two new passwords don't match", 'warning'); return setError("The two new passwords don't match. Please re-type it."); }
     setBusy(true);
     setError('');
     try {
       const r = await api('/auth/password', { method: 'PUT', body: form });
       replaceToken(r.token);
-      setForm({ current_password: '', password: '' });
+      setForm({ current_password: '', password: '', password_confirm: '' });
       toast('Password changed. Other devices have been logged out.');
     } catch (err) {
       setError(err.message); showToast(err.message, 'error');
@@ -52,10 +53,12 @@ function ChangePassword() {
           onChange={(e) => setForm({ ...form, current_password: e.target.value })} />
         <PasswordInput id="new-pw" label="New password" autoComplete="new-password" value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })} />
+        <ConfirmPasswordInput id="new-pw-confirm" label="Re-type new password" password={form.password} value={form.password_confirm}
+          onChange={(e) => setForm({ ...form, password_confirm: e.target.value })} />
         <PasswordRules password={form.password} hints={hints} />
         {error && <Alert type="error">{error}</Alert>}
         <div className="row" style={{ justifyContent: 'flex-end' }}>
-          <button className="btn btn-primary" disabled={busy || !form.current_password || !passwordOk(form.password, hints)}>
+          <button className="btn btn-primary" disabled={busy || !form.current_password || !passwordOk(form.password, hints) || !passwordsMatch(form.password, form.password_confirm)}>
             {busy && <Spinner small white />}Change password
           </button>
         </div>

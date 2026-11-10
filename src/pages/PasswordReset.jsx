@@ -5,7 +5,7 @@ import { LuKeyRound as KeyRound, LuMail as Mail, LuMailCheck as MailCheck } from
 import { api } from '../api.js';
 import { AuthLayout } from '../components/Layout.jsx';
 import PasswordRules from '../components/PasswordRules.jsx';
-import { Alert, PasswordInput, Spinner, TextInput, showToast, useToast } from '../components/ui.jsx';
+import { Alert, ConfirmPasswordInput, PasswordInput, Spinner, TextInput, passwordsMatch, showToast, useToast } from '../components/ui.jsx';
 import { passwordOk } from '../passwordRules.js';
 
 export function ForgotPassword() {
@@ -57,16 +57,18 @@ export function ResetPassword() {
   const toast = useToast();
   const token = params.get('token') || '';
   const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   const submit = async (e) => {
     e.preventDefault();
     if (!passwordOk(password)) return setError('Please choose a password that meets all the rules');
+    if (!passwordsMatch(password, confirm)) { showToast("The two passwords don't match", 'warning'); return setError("The two passwords don't match. Please re-type it."); }
     setBusy(true);
     setError('');
     try {
-      await api('/auth/reset-password', { method: 'POST', body: { token, password } });
+      await api('/auth/reset-password', { method: 'POST', body: { token, password, password_confirm: confirm } });
       toast('Password changed. You can log in with your new password now.');
       navigate('/login', { replace: true });
     } catch (err) {
@@ -87,9 +89,10 @@ export function ResetPassword() {
     <AuthLayout icon={KeyRound} title="Choose a new password" subtitle="You'll be logged out everywhere else.">
       <form className="stack" onSubmit={submit}>
         <PasswordInput id="password" label="New password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <ConfirmPasswordInput password={password} value={confirm} onChange={(e) => setConfirm(e.target.value)} />
         <PasswordRules password={password} />
         {error && <Alert type="error" action={/expired|invalid/i.test(error) ? <Link to="/forgot-password" className="btn btn-sm btn-outline">New link</Link> : null}>{error}</Alert>}
-        <button className="btn btn-primary btn-lg btn-block" disabled={busy || !passwordOk(password)}>{busy && <Spinner small white />}Save new password</button>
+        <button className="btn btn-primary btn-lg btn-block" disabled={busy || !passwordOk(password) || !passwordsMatch(password, confirm)}>{busy && <Spinner small white />}Save new password</button>
       </form>
     </AuthLayout>
   );

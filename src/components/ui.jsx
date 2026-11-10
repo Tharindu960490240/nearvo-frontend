@@ -215,11 +215,13 @@ export const TextInput = forwardRef(function TextInput(
   );
 });
 
-export function PasswordInput({ id, value, onChange, autoComplete, minLength, required = true, label = 'Password', help }) {
+export function PasswordInput({ id, value, onChange, autoComplete, minLength, required = true, label = 'Password', help, error, success, onPaste }) {
   const [show, setShow] = useState(false);
   return (
     <TextInput id={id} label={label} icon={Lock} type={show ? 'text' : 'password'} value={value} onChange={onChange}
-      autoComplete={autoComplete} minLength={minLength} required={required} help={help}
+      autoComplete={autoComplete} minLength={minLength} required={required} help={help} error={error} onPaste={onPaste}
+      color={success ? 'success' : undefined} focused={success || undefined}
+      slotProps={{ formHelperText: success ? { sx: { color: 'success.main', fontWeight: 600 } } : undefined }}
       end={<Tooltip title={show ? 'Hide password' : 'Show password'}>
         <IconButton edge="end" onClick={() => setShow((v) => !v)} onMouseDown={(e) => e.preventDefault()} aria-label={show ? 'Hide password' : 'Show password'}>
           {show ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -233,6 +235,21 @@ export function IconInput(props) {
 }
 
 export { Button };
+
+/**
+ * "Re-type password" field with its own show/hide button. Shows "Passwords don't match" or
+ * "Passwords match" as soon as something is typed.
+ */
+export function ConfirmPasswordInput({ id = 'password-confirm', password, value, onChange, label = 'Re-type password' }) {
+  const typed = value.length > 0;
+  const match = typed && value === password;
+  const mismatch = typed && !password.startsWith(value) ? "Passwords don't match" : typed && value.length >= password.length && !match ? "Passwords don't match" : '';
+  return (
+    <PasswordInput id={id} label={label} autoComplete="new-password" value={value} onChange={onChange}
+      error={mismatch} success={match} help={match ? 'Passwords match' : !typed ? 'Type the same password again' : undefined} />
+  );
+}
+export const passwordsMatch = (a, b) => a.length > 0 && a === b;
 
 /* ---------- Toasts (AFC-style CustomSnackbar) ---------- */
 // toast(message, type = 'success', { action: { label, onClick }, title })

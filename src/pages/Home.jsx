@@ -1,127 +1,190 @@
-import { Box, Button, Stack, Typography, List, ListItem, ListItemAvatar, ListItemText, ListItemButton } from "@mui/material";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { useI18n } from "../i18n/index.jsx";
-import { useDomain, useAttendance } from "../state/data.jsx";
-import { useOpeners } from "../dialogs/index.jsx";
-import { InlineLoader } from "../components/LoadingSpinner.jsx";
-import { StatCard, SectionCard, EmptyState, StudentAvatar, Pill, StatusPill, TonalIconButton, ColorBar, IconTip } from "../components/common.jsx";
-import { attStats, indexAttendance, slotKey, pct } from "../lib/domain.js";
-import { todayStr, curYm, addMonths, fmtTime, endTime } from "../lib/dates.js";
-import { AddCardRounded, AddRounded, CampaignRounded, CelebrationRounded, DoneRounded, FactCheckRounded, GroupsRounded, HistoryRounded, HowToRegRounded, NotificationsRounded, PaymentsRounded, PendingActionsRounded, PersonAddRounded, ReceiptLongRounded, SavingsRounded, ThumbUpRounded, TodayRounded, TrendingDownRounded, WavingHandRounded, WeekendRounded } from "../icons.jsx";
+import InputAdornment from '@mui/material/InputAdornment';
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  LuArrowRight as ArrowRight,
+  LuBadgeCheck as BadgeCheck,
+  LuCircleCheck as CircleCheck,
+  LuFilePlus2 as FilePlus2,
+  LuFlag as Flag,
+  LuHandshake as Handshake,
+  LuHardHat as HardHat,
+  LuHammer as Hammer,
+  LuMessageSquareReply as MessageSquareReply,
+  LuReceiptText as ReceiptText,
+  LuSearch as Search,
+  LuStar as Star,
+} from 'react-icons/lu';
+import { api } from '../api.js';
+import { localityLabel } from '../australia.js';
+import { useAuth } from '../context/AuthContext.jsx';
+import TradieCard from '../components/TradieCard.jsx';
+import LocationInput from '../components/LocationInput.jsx';
+import { CategoryIcon, CategoryTile } from '../components/CategoryIcon.jsx';
+import { Alert, IconTile, Skeleton } from '../components/ui.jsx';
 
 export default function Home() {
-  const D = useDomain(); const { t, dayLong, longDate, monthOnly, monthLabel, shortDate } = useI18n();
-  const open = useOpeners(); const nav = useNavigate();
-  const td = todayStr(), ym = curYm(), prev = addMonths(ym, -1), dow = new Date().getDay();
-  const { rows } = useAttendance([ym, prev]);
-  const h = new Date().getHours();
-  const greet = t(h < 12 ? "morning" : h < 17 ? "afternoon" : "evening") + (D.settings.tutorName ? ", " + D.settings.tutorName : "");
-  const dateLine = `${dayLong(dow)}, ${longDate(td)}`;
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState(null);
+  const [slug, setSlug] = useState('');
+  const [place, setPlace] = useState(null);
+  const [top, setTop] = useState(null);
+  const [states, setStates] = useState([]);
+  const [error, setError] = useState('');
 
-  if (!D.students.length && !D.classes.length) {
-    return (<>
-      <Box><Typography color="text.secondary">{dateLine}</Typography><Typography variant="h4">{greet}</Typography></Box>
-      <SectionCard>
-        <EmptyState icon={WavingHandRounded} title={t("setup_title")} text={t("setup_p")} action={
-          <Stack direction="row" sx={{ justifyContent: "center", gap: 1, flexWrap: "wrap" }}>
-            <Button variant="contained" startIcon={<AddRounded />} onClick={() => open.classForm()}>{t("add_first_class")}</Button>
-            <Button variant="outlined" startIcon={<PersonAddRounded />} onClick={() => open.studentForm()}>{t("add_student")}</Button>
-          </Stack>} />
-      </SectionCard>
-    </>);
-  }
+  useEffect(() => {
+    api('/categories').then(setCategories).catch(() => setCategories([]));
+    api('/tradies', { params: { sort: 'rating', limit: 6 } }).then((d) => setTop(d.results)).catch(() => setTop([]));
+    api('/states').then(setStates).catch(() => {});
+  }, []);
 
-  const studs = D.activeStudents();
-  let expected = 0, outstanding = 0; const dueList = [];
-  let admDue = 0;
-  D.students.forEach(s => { const f = D.feeStatus(s, ym); expected += f.due; outstanding += f.bal; admDue += D.admissionDue(s); if (f.bal > 0) dueList.push({ s, f }); });
-  const collected = D.collectedFor(ym);
-  const monthRows = rows.filter(r => r.date.startsWith(ym));
-  const P = monthRows.filter(r => r.v !== "A").length, T = monthRows.length;
-  const idx = indexAttendance(rows);
-  const today = D.occurrencesOn(td);
-  const low = studs.map(s => ({ s, st: attStats(rows, s.id) })).filter(x => x.st.total >= 3 && x.st.rate < 0.8).sort((a, b) => a.st.rate - b.st.rate).slice(0, 4);
-  const recent = D.payments.slice(0, 5);
+  const search = (e) => {
+    e.preventDefault();
+    if (!slug && !place) return setError('Choose a trade or your suburb to search');
+    const p = new URLSearchParams();
+    if (slug) p.set('category', slug);
+    if (place) { p.set('lat', place.latitude.toFixed(5)); p.set('lng', place.longitude.toFixed(5)); p.set('near', localityLabel(place)); }
+    navigate(`/tradies?${p}`);
+  };
 
-  return (<>
-    <Stack direction="row" sx={{ alignItems: "flex-end", justifyContent: "space-between", gap: 2, flexWrap: "wrap" }}>
-      <Box><Typography color="text.secondary">{dateLine}</Typography><Typography variant="h4" sx={{ fontSize: { xs: 23, sm: 28 } }}>{greet}</Typography></Box>
-      <Button variant="tonal" component={RouterLink} to="/reminders" startIcon={<CampaignRounded />}>{t("send_reminders")}</Button>
-    </Stack>
-    <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "repeat(2, minmax(0,1fr))", lg: "repeat(4, minmax(0,1fr))" } }}>
-      <StatCard hero icon={SavingsRounded} label={t("collected_m", { m: monthOnly(ym) })} value={D.money(collected)} progress={expected ? Math.min(100, (collected / expected) * 100) : 0} sub={t("of_expected", { x: D.money(expected) })} />
-      <StatCard icon={PendingActionsRounded} iconColor="error.main" label={t("still_due")} value={D.money(outstanding + admDue)} sub={t("to_collect", { n: dueList.length }) + (admDue ? " " + t("plus_adm", { x: D.money(admDue) }) : "")} />
-      <StatCard icon={HowToRegRounded} iconColor="success.main" label={t("att_month")} value={T ? Math.round((P / T) * 100) + "%" : "–"} sub={t("marks_present", { p: P, t: T })} />
-      <StatCard icon={GroupsRounded} iconColor="primary.main" label={t("active_students")} value={studs.length} sub={t("in_classes", { n: D.classes.length })} />
-    </Box>
-    <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" } }}>
-      <SectionCard icon={TodayRounded} title={t("todays_classes")}>
-        {today.length ? (
-          <List disablePadding>
-            {today.map(({ c, s, status, change, origTime }) => {
-              const n = D.studentsIn(c.id).length, rec = idx.get(slotKey(c.id, td, s.time)), marked = rec ? Object.keys(rec).length : 0;
-              const off = ["cancelled", "break", "movedAway"].includes(status);
-              const tag = status === "cancelled" ? t("st_cancelled") : status === "break" ? t("st_break") : status === "movedAway" ? t("st_moved_away", { d: shortDate(change.newDate) })
-                : status === "moved" ? t("st_moved", { t: fmtTime(origTime) }) : status === "movedIn" ? t("st_moved_in", { d: shortDate(change.date) }) : null;
-              return (
-                <ListItem key={c.id + s.time + status} divider disableGutters sx={{ gap: 1.5, py: 1.25, "&:last-child": { borderBottom: 0 }, opacity: off ? 0.7 : 1 }}>
-                  <ColorBar color={off ? "transparent" : c.color} h={40} />
-                  <ListItemText sx={{ minWidth: 0 }} primary={c.name} slotProps={{ primary: { noWrap: true, fontWeight: 500, sx: off ? { textDecoration: status === "cancelled" ? "line-through" : "none" } : undefined }, secondary: { noWrap: true, component: "div" } }}
-                    secondary={<>{`${fmtTime(s.time)}–${fmtTime(endTime(s.time, s.duration))} · ${t("n_students", { n })}${c.location ? " · " + c.location : ""}`}
-                      {tag && <Box sx={{ mt: 0.5 }}><Pill tone={off ? "bad" : "warn"} sx={{ height: 22, fontSize: 11.5 }}>{tag}</Pill></Box>}</>} />
-                  {off ? null : marked ? <Pill tone="good" icon={<DoneRounded />}>{t("n_marked", { a: marked, b: n })}</Pill>
-                    : <Button size="small" variant="tonal" startIcon={<FactCheckRounded />} sx={{ flex: "none" }} onClick={() => nav(`/attendance?cid=${c.id}&date=${td}&time=${s.time}`)}>{t("take_att")}</Button>}
-                </ListItem>
-              );
-            })}
-          </List>
-        ) : <EmptyState icon={WeekendRounded} title={t("no_class_today")} text={t("no_class_today_p")} />}
-      </SectionCard>
-      <SectionCard icon={ReceiptLongRounded} iconColor="error.main" title={t("fees_due_m", { m: monthOnly(ym) })} action={<Button size="small" component={RouterLink} to="/fees">{t("see_all")}</Button>}>
-        {dueList.length ? (
-          <List disablePadding>
-            {dueList.sort((a, b) => b.f.bal - a.f.bal).slice(0, 5).map(({ s, f }) => (
-              <ListItem key={s.id} divider disableGutters sx={{ gap: 1, "&:last-child": { borderBottom: 0 } }}>
-                <ListItemAvatar sx={{ minWidth: 52 }}><StudentAvatar name={s.name} /></ListItemAvatar>
-                <ListItemText primary={s.name} secondary={f.status === "partial" ? t("left_to_pay", { x: D.money(f.bal) }) : t("x_due", { x: D.money(f.bal) })} slotProps={{ primary: { noWrap: true, fontWeight: 500 }, secondary: { className: "num" } }} />
-                <IconTip title={t("remind")}><TonalIconButton aria-label={`${t("remind")}: ${s.name}`} onClick={() => open.remindFee(s.id, ym)}><NotificationsRounded /></TonalIconButton></IconTip>
-                <IconTip title={t("record_payment")}><TonalIconButton aria-label={`${t("record_payment")}: ${s.name}`} onClick={() => open.payForm(s.id, ym)}><AddCardRounded /></TonalIconButton></IconTip>
-              </ListItem>
+  return (
+    <>
+      <section className="hero">
+        <div className="container">
+          <span className="pill"><BadgeCheck size={16} color="var(--brand)" /> Every tradie's ABN is checked with the ABR</span>
+          <h1>Find a local <span className="blue">tradie</span>, fast</h1>
+          <p className="hero-sub">
+            Plumbers, electricians, painters, cleaners and more. Post your job for free, compare quotes from tradies near you, and choose who you hire.
+          </p>
+
+          <form className="searchbar" onSubmit={search}>
+            <div className="searchbar-part">
+              <TextField select variant="standard" fullWidth value={slug} onChange={(e) => { setSlug(e.target.value); setError(''); }}
+                slotProps={{
+                  htmlInput: { 'aria-label': 'What trade do you need' },
+                  input: { disableUnderline: true, sx: { py: 0.75 }, startAdornment: <InputAdornment position="start"><Hammer size={18} color="var(--brand)" /></InputAdornment> },
+                  select: {
+                    displayEmpty: true,
+                    renderValue: (v) => (v ? categories?.find((c) => c.slug === v)?.name : <span className="muted">What trade do you need?</span>),
+                    MenuProps: { slotProps: { paper: { sx: { maxHeight: 380 } } } },
+                  },
+                }}>
+                <MenuItem value="">Any trade</MenuItem>
+                {categories?.map((c) => (
+                  <MenuItem key={c.id} value={c.slug} sx={{ gap: 1.25 }}><CategoryIcon icon={c.icon} size={18} />{c.name}</MenuItem>
+                ))}
+              </TextField>
+            </div>
+            <div className="searchbar-part">
+              <LocationInput bare placeholder="Your suburb or postcode" onSelect={(p) => { setPlace(p); setError(''); }} />
+            </div>
+            <button className="btn btn-primary btn-lg"><Search size={18} />Find tradies</button>
+          </form>
+          {error && <Alert type="info" className="mt" onClose={() => setError('')}>{error}</Alert>}
+
+          {user?.role !== 'tradie' && (
+            <div className="row wrap mt-lg" style={{ gap: 12 }}>
+              <span className="muted bold">Don't want to search?</span>
+              <Link to={slug ? `/jobs/new?category=${slug}` : '/jobs/new'} className="btn btn-outline"><FilePlus2 size={17} />Post a job and get free quotes</Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <div className="container">
+        <section className="section">
+          <div className="section-head">
+            <div><h2>Popular trades</h2><p className="muted mt-xs">Tap a trade to see local tradies, their prices and reviews</p></div>
+          </div>
+          <div className="grid grid-5">
+            {categories === null ? <Skeleton height={140} count={10} /> : categories.map((c) => (
+              <Link key={c.id} to={`/tradies?category=${c.slug}`} className="card card-hover card-link card-pad-sm center" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '22px 12px' }}>
+                <CategoryTile icon={c.icon} size={52} />
+                <span className="bold">{c.name}</span>
+                <span className="small muted">{c.tradie_count} tradie{c.tradie_count === 1 ? '' : 's'}</span>
+              </Link>
             ))}
-          </List>
-        ) : <EmptyState icon={CelebrationRounded} title={t("all_paid")} text={t("all_paid_p", { m: monthLabel(ym) })} />}
-      </SectionCard>
-      <SectionCard icon={TrendingDownRounded} iconColor="warning.main" title={t("needs_att")}>
-        {low.length ? (
-          <List disablePadding>
-            {low.map(({ s, st }) => (
-              <ListItemButton key={s.id} onClick={() => open.student(s.id)} sx={{ gap: 1, px: 1 }}>
-                <ListItemAvatar sx={{ minWidth: 52 }}><StudentAvatar name={s.name} /></ListItemAvatar>
-                <ListItemText primary={s.name} secondary={t("missed", { a: st.a, t: st.total })} slotProps={{ primary: { noWrap: true, fontWeight: 500 } }} />
-                <Pill tone={st.rate < 0.6 ? "bad" : "warn"}>{t("attended_pct", { p: pct(st.rate) })}</Pill>
-              </ListItemButton>
-            ))}
-          </List>
-        ) : <EmptyState icon={ThumbUpRounded} title={t("healthy")} text={t("healthy_p")} />}
-      </SectionCard>
-      <SectionCard icon={HistoryRounded} iconColor="success.main" title={t("recent_pay")}>
-        {recent.length ? (
-          <List disablePadding>
-            {recent.map(p => { const s = D.studentById(p.sid); return (
-              <ListItem key={p.id} divider disableGutters sx={{ gap: 1, "&:last-child": { borderBottom: 0 } }}>
-                <ListItemAvatar sx={{ minWidth: 52 }}><StudentAvatar name={s ? s.name : "?"} /></ListItemAvatar>
-                <ListItemText primary={s ? s.name : t("former")} secondary={`${shortDate(p.date)} · ${D.methodLabel(p.method)} · ${p.kind === "admission" ? D.paymentLabel(p) : t("for_m", { m: monthOnly(p.ym) })}`} slotProps={{ primary: { noWrap: true, fontWeight: 500 } }} />
-                <Typography className="num" sx={{ fontWeight: 700 }}>{D.money(p.amount)}</Typography>
-              </ListItem>); })}
-          </List>
-        ) : <EmptyState icon={PaymentsRounded} title={t("no_pay")} text={t("no_pay_p")} />}
-      </SectionCard>
-    </Box>
-  </>);
-}
+          </div>
+        </section>
 
-export function Loading() {
-  return <InlineLoader />;
+        <section className="section">
+          <div className="section-head"><div><h2>How Nearvo works</h2><p className="muted mt-xs">Get the job done in three simple steps</p></div></div>
+          <div className="grid grid-3">
+            {[
+              [FilePlus2, 'Post your job', "Tell us what you need and where. It takes two minutes and it's free."],
+              [ReceiptText, 'Compare quotes', 'Local tradies who cover your suburb send quotes. Compare prices and reviews.'],
+              [Handshake, 'Hire & review', "Accept the quote you like, get their contact details, and leave a review when it's done."],
+            ].map(([Icon, title, text], i) => (
+              <div key={title} className="card card-pad row row-top" style={{ gap: 16 }}>
+                <IconTile icon={Icon} size={48} />
+                <div className="stack-xs">
+                  <span className="eyebrow">Step {i + 1}</span>
+                  <h3>{title}</h3>
+                  <p className="small muted">{text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="section">
+          <div className="section-head">
+            <h2>Top-rated tradies</h2>
+            <Link to="/tradies?sort=rating" className="btn btn-ghost">See all <ArrowRight size={17} /></Link>
+          </div>
+          <div className="grid grid-3">
+            {top === null ? <Skeleton height={170} count={6} /> : top.map((t) => <TradieCard key={t.id} tradie={t} />)}
+          </div>
+          {top?.length === 0 && <p className="muted">No tradies have joined yet. <Link to="/register?role=tradie">Be the first!</Link></p>}
+        </section>
+
+        <section className="section card card-pad">
+          <h2>What we check, and what we don't</h2>
+          <p className="muted mt-xs mb-lg">We want you to know exactly what the information on Nearvo means.</p>
+          <div className="grid grid-3">
+            {[
+              [BadgeCheck, 'ABN checked', 'Every tradie needs an active ABN, checked automatically with the Australian Business Register.', 'var(--teal)', 'var(--teal-bg)'],
+              [Star, 'Reviews from real jobs', 'Only customers who hired a tradie through Nearvo can review them. Tradies can reply publicly.', 'var(--orange)', 'var(--orange-bg)'],
+              [Flag, 'Report a problem', 'Anyone can report a review or profile. We look at every report, usually within 7 days.', 'var(--red)', 'var(--red-bg)'],
+            ].map(([Icon, title, text, color, bg]) => (
+              <div key={title} className="row row-top" style={{ gap: 14 }}>
+                <IconTile icon={Icon} color={color} bg={bg} />
+                <div><h4>{title}</h4><p className="small muted mt-xs">{text}</p></div>
+              </div>
+            ))}
+          </div>
+          <Alert type="info" className="mt-lg" icon={MessageSquareReply}>
+            Nearvo doesn't check trade licences or insurance. Before work starts, ask your tradie for their licence and insurance details and check them with your state's licensing authority, especially for plumbing, gas, electrical and building work.
+          </Alert>
+        </section>
+
+        {states.length > 0 && (
+          <section className="section">
+            <h2 className="mb">Tradies across Australia</h2>
+            <div className="row wrap">
+              {states.map((s) => <Link key={s.code} to={`/tradies?state=${s.code}`} className="chip chip-outline chip-lg">{s.name} · {s.tradie_count}</Link>)}
+            </div>
+          </section>
+        )}
+
+        {!user && (
+          <section className="cta-band">
+            <div>
+              <span className="row bold small" style={{ opacity: 0.9 }}><HardHat size={18} /> FOR TRADIES</span>
+              <h2 className="mt-sm">Get more local jobs</h2>
+              <div className="stack-sm mt">
+                {['See jobs posted in your service area', 'Quote only on the jobs you want', 'Build your reputation with reviews from real jobs'].map((t) => (
+                  <span key={t} className="row"><CircleCheck size={18} />{t}</span>
+                ))}
+              </div>
+            </div>
+            <Link to="/register?role=tradie" className="btn btn-white btn-lg">Join as a tradie</Link>
+          </section>
+        )}
+      </div>
+    </>
+  );
 }
-// keep StatusPill import used by other pages via re-export
-export { StatusPill };

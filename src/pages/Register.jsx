@@ -15,7 +15,7 @@ import AbnField from '../components/AbnField.jsx';
 import PasswordRules from '../components/PasswordRules.jsx';
 import { passwordOk, personalHints } from '../passwordRules.js';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
-import { Alert, CheckboxField, PasswordInput, Spinner, TextInput, showToast } from '../components/ui.jsx';
+import { Alert, CheckboxField, ConfirmPasswordInput, PasswordInput, Spinner, TextInput, passwordsMatch, showToast } from '../components/ui.jsx';
 
 export default function Register() {
   const { register } = useAuth();
@@ -23,7 +23,7 @@ export default function Register() {
   const location = useLocation();
   const [params] = useSearchParams();
   const [role, setRole] = useState(params.get('role') === 'tradie' ? 'tradie' : 'customer');
-  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', business_name: '', abn: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', password_confirm: '', phone: '', business_name: '', abn: '' });
   const [abr, setAbr] = useState(null);
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState('');
@@ -42,6 +42,7 @@ export default function Register() {
     const stop = (m) => { setError(m); showToast(m, 'warning'); };
     if (role === 'tradie' && !abr) return stop('Please enter an active ABN or ACN. We check it with the Australian Business Register.');
     if (!passwordOk(form.password, hints)) return stop('Please choose a password that meets all the rules');
+    if (!passwordsMatch(form.password, form.password_confirm)) return stop("The two passwords don't match. Please re-type it.");
     if (!agree) return stop('Please agree to the Terms of Use and Privacy Policy');
     setBusy(true);
     setError('');
@@ -83,13 +84,14 @@ export default function Register() {
         <TextInput label="Email" icon={Mail} id="email" type="email" required autoComplete="email" value={form.email} onChange={set('email')} />
         <TextInput label={role === 'tradie' ? 'Mobile number' : 'Mobile number (optional)'} help={role === 'tradie' ? 'Shared only with customers who hire you' : 'Shared only with the tradie you hire'} icon={Phone} id="phone" type="tel" required={role === 'tradie'} autoComplete="tel" placeholder="0412 345 678" value={form.phone} onChange={set('phone')} />
         <PasswordInput label="Password" required id="password" autoComplete="new-password" minLength={8} value={form.password} onChange={set('password')} />
+        <ConfirmPasswordInput password={form.password} value={form.password_confirm} onChange={set('password_confirm')} />
         <PasswordRules password={form.password} hints={hints} />
         <CheckboxField id="agree" checked={agree} onChange={setAgree}>
           <span>I agree to the <Link to="/terms" target="_blank">Terms of Use</Link> and <Link to="/privacy" target="_blank">Privacy Policy</Link>{role === 'tradie' ? ', and confirm I hold any licences and insurance my work legally requires' : ''}.</span>
         </CheckboxField>
         {error && <Alert type="error">{error}</Alert>}
         <LoadingSpinner open={busy} text="Creating your account" />
-        <button className="btn btn-primary btn-lg btn-block" disabled={busy || (role === 'tradie' && !abr) || !agree || !passwordOk(form.password, hints)}>
+        <button className="btn btn-primary btn-lg btn-block" disabled={busy || (role === 'tradie' && !abr) || !agree || !passwordOk(form.password, hints) || !passwordsMatch(form.password, form.password_confirm)}>
           {busy && <Spinner small white />}{role === 'tradie' ? 'Join as a tradie' : 'Sign up'}
         </button>
         <p className="small muted center">Already have an account? <Link to="/login" state={location.state} className="bold">Log in</Link></p>
