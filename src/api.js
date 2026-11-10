@@ -1,91 +1,41 @@
-// API address. Forgiving about the setting: a trailing "/" is removed and "/api" is added to a
-// full backend address that leaves it out (e.g. https://nearvo-backend.vercel.app -> .../api).
-const BASE = (() => {
-  let b = String(import.meta.env.VITE_API_URL || '/api').trim().replace(/\/+$/, '');
-  if (/^https?:\/\//i.test(b) && !/\/api$/i.test(b)) b += '/api';
-  return b || '/api';
-})();
-// Where uploaded profile photos are served (the API host). Empty = same origin (Vite proxies /uploads in dev).
-export const FILES_BASE = import.meta.env.VITE_FILES_URL || '';
-export const TOKEN_KEY = 'nearvo_token';
+// Tiny fetch wrapper. REACT_APP_API_URL is the backend's address, e.g. https://tutordesk-api.vercel.app
+// Tolerates common mistakes: missing https://, trailing slash, or "/api" already on the end.
+function apiBase(raw) {
+  let u = (raw || "http://localhost:4000").trim().replace(/\/+$/, "").replace(/\/api$/, "");
+  if (!/^https?:\/\//i.test(u)) u = (/^(localhost|127\.0\.0\.1)(:|$)/.test(u) ? "http://" : "https://") + u;
+  return u + "/api";
+}
+const BASE = apiBase(process.env.REACT_APP_API_URL);
+const KEY = "td-token";
 
-const authHeader = () => {
-  const token = localStorage.getItem(TOKEN_KEY);
-  return token ? { Authorization: `Bearer ${token}` } : {};
+export const auth = {
+  get token() { try { return localStorage.getItem(KEY); } catch { return null; } },
+  set(token) { try { if (token) localStorage.setItem(KEY, token); else localStorage.removeItem(KEY); } catch { /* ignore */ } },
 };
 
-async function handle(res) {
-  const data = res.status === 204 ? null : await res.json().catch(() => null);
+export class ApiError extends Error {
+  constructor(status, code, issues) { super(code || "error"); this.status = status; this.code = code; this.issues = issues; }
+}
+
+let onUnauthorized = () => {};
+export const setUnauthorizedHandler = fn => { onUnauthorized = fn; };
+
+export async function api(path, { method = "GET", body } = {}) {
+  let res;
+  try {
+    res = await fetch(BASE + path, {
+      method,
+      headers: { ...(body !== undefined ? { "Content-Type": "application/json" } : {}), ...(auth.token ? { Authorization: "Bearer " + auth.token } : {}) },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw new ApiError(0, "network");
+  }
+  const data = await res.json().catch(() => null);
   if (!res.ok) {
-    const err = new Error(data?.error || `Request failed (${res.status})`);
-    err.code = data?.code;
-    err.status = res.status;
-    // Account suspended, deleted or password changed elsewhere: sign out everywhere in this browser.
-    if (['ACCOUNT_SUSPENDED', 'ACCOUNT_GONE', 'PASSWORD_CHANGED'].includes(err.code) && localStorage.getItem(TOKEN_KEY)) {
-      localStorage.removeItem(TOKEN_KEY);
-      window.dispatchEvent(new CustomEvent('nearvo:signed-out', { detail: err.message }));
-    }
-    throw err;
+    const publicPath = ["/auth/login", "/auth/register", "/auth/forgot", "/auth/reset", "/auth/config"].some(x => path.startsWith(x));
+    if ((res.status === 401 || data?.error === "account_disabled") && !publicPath && auth.token) onUnauthorized();
+    throw new ApiError(res.status, data?.error, data?.issues);
   }
   return data;
-}
-
-export async function api(path, { method = 'GET', body, params } = {}) {
-  const url = new URL(BASE + path, window.location.origin);
-  if (params) {
-    Object.entries(params).forEach(([k, v]) => {
-      if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
-    });
-  }
-  const res = await fetch(url, {
-    method,
-    headers: { 'Content-Type': 'application/json', ...authHeader() },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  return handle(res);
-}
-
-export async function upload(path, formData) {
-  const res = await fetch(new URL(BASE + path, window.location.origin), { method: 'POST', headers: authHeader(), body: formData });
-  return handle(res);
-}
-
-/** Fetches a protected file (e.g. an ID document for admins) and returns an object URL. */
-export async function fetchBlobUrl(path) {
-  const res = await fetch(new URL(BASE + path, window.location.origin), { headers: authHeader() });
-  if (!res.ok) throw new Error('Could not load file');
-  return URL.createObjectURL(await res.blob());
-}
-
-export const photoSrc = (url) => (url ? (url.startsWith('http') ? url : FILES_BASE + url) : undefined);
-
-export function getCurrentPosition() {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) return reject(new Error('Location is not supported by your browser'));
-    navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => reject(new Error('Could not get your location. Please allow location access or type your suburb.')),
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
-  });
-}
-
-export const formatDistance = (km) =>
-  km == null ? null : km < 1 ? `${Math.round(km * 1000)} m` : `${km < 10 ? km.toFixed(1) : Math.round(km)} km`;
-
-export const money = (n) =>
-  n == null ? '' : `$${Number(n).toLocaleString('en-AU', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })}`;
-
-export const priceLabel = (s) => (s.price_unit === 'on quote' || s.price_from == null ? 'On quote' : `From ${money(s.price_from)} ${s.price_unit}`);
-
-export function timeAgo(date) {
-  const s = Math.max(1, Math.round((Date.now() - new Date(date)) / 1000));
-  if (s < 60) return 'just now';
-  const m = Math.round(s / 60);
-  if (m < 60) return `${m} min ago`;
-  const h = Math.round(m / 60);
-  if (h < 24) return `${h} hour${h > 1 ? 's' : ''} ago`;
-  const d = Math.round(h / 24);
-  if (d < 30) return `${d} day${d > 1 ? 's' : ''} ago`;
-  return new Date(date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
 }

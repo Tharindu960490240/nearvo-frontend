@@ -69,8 +69,3 @@
   .afc-loader-ring { animation-duration: 3s; }
   .afc-loader-glow, .afc-loader-icon, .loading-dots i { animation: none; }
 }
-
-/* Nearvo additions: the logo mark used in the middle of the loader */
-.afc-loader-mark { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; color: #fff; background: linear-gradient(135deg, #4fc3f7, #0288d1); box-shadow: 0 4px 12px rgba(2, 136, 209, .3); }
-.afc-loader-mark.white { background: transparent; box-shadow: none; width: 42px; height: 42px; }
-.loading-spinner-inline .loading-text { color: var(--muted-color); }
