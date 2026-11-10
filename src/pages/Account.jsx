@@ -14,13 +14,14 @@ import { api } from '../api.js';
 import { UserAvatar } from '../components/AppShell.jsx';
 import PasswordRules from '../components/PasswordRules.jsx';
 import { Alert, Modal, PasswordInput, Spinner, Switch, TextInput, useToast } from '../components/ui.jsx';
-import { passwordOk } from '../passwordRules.js';
+import { passwordOk, personalHints } from '../passwordRules.js';
 import { ROLE_LABELS } from '../const/navigation.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useThemeMode } from '../context/ThemeContext.jsx';
 
 function ChangePassword() {
-  const { replaceToken } = useAuth();
+  const { user, replaceToken } = useAuth();
+  const hints = personalHints(user.name, user.email.split('@')[0], user.business_name);
   const toast = useToast();
   const [form, setForm] = useState({ current_password: '', password: '' });
   const [busy, setBusy] = useState(false);
@@ -28,7 +29,7 @@ function ChangePassword() {
 
   const save = async (e) => {
     e.preventDefault();
-    if (!passwordOk(form.password)) return setError('Please choose a password that meets all the rules');
+    if (!passwordOk(form.password, hints)) return setError('Please choose a password that meets all the rules');
     setBusy(true);
     setError('');
     try {
@@ -51,10 +52,10 @@ function ChangePassword() {
           onChange={(e) => setForm({ ...form, current_password: e.target.value })} />
         <PasswordInput id="new-pw" label="New password" autoComplete="new-password" value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })} />
-        <PasswordRules password={form.password} />
+        <PasswordRules password={form.password} hints={hints} />
         {error && <Alert type="error">{error}</Alert>}
         <div className="row" style={{ justifyContent: 'flex-end' }}>
-          <button className="btn btn-primary" disabled={busy || !form.current_password || !passwordOk(form.password)}>
+          <button className="btn btn-primary" disabled={busy || !form.current_password || !passwordOk(form.password, hints)}>
             {busy && <Spinner small white />}Change password
           </button>
         </div>

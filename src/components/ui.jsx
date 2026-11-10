@@ -18,6 +18,7 @@ import MuiSwitch from '@mui/material/Switch';
 import MuiTab from '@mui/material/Tab';
 import MuiTabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import CustomSnackbar from './CustomSnackbar.jsx';
 import { InlineLoader } from './LoadingSpinner.jsx';
 import {
@@ -219,9 +220,11 @@ export function PasswordInput({ id, value, onChange, autoComplete, minLength, re
   return (
     <TextInput id={id} label={label} icon={Lock} type={show ? 'text' : 'password'} value={value} onChange={onChange}
       autoComplete={autoComplete} minLength={minLength} required={required} help={help}
-      end={<IconButton edge="end" onClick={() => setShow(!show)} aria-label={show ? 'Hide password' : 'Show password'}>
-        {show ? <EyeOff size={18} /> : <Eye size={18} />}
-      </IconButton>} />
+      end={<Tooltip title={show ? 'Hide password' : 'Show password'}>
+        <IconButton edge="end" onClick={() => setShow((v) => !v)} onMouseDown={(e) => e.preventDefault()} aria-label={show ? 'Hide password' : 'Show password'}>
+          {show ? <EyeOff size={18} /> : <Eye size={18} />}
+        </IconButton>
+      </Tooltip>} />
   );
 }
 
