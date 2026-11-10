@@ -100,7 +100,7 @@ export default function FindTradies() {
                 ...(hasLoc ? [['distance', 'Nearest first (distance)']] : []),
                 ['rating', 'Best rated'], ['price', 'Lowest price'], ['experience', 'Most experienced'], ['newest', 'Newest on Nearvo'],
               ]} />
-            {!hasLoc && <button className="btn btn-outline" style={{ height: 56 }} onClick={useMyLocation}><LocateFixed size={17} />Use my location</button>}
+            {!hasLoc && <button className="btn btn-outline" style={{ height: 40, minHeight: 40 }} onClick={useMyLocation}><LocateFixed size={17} />Use my location</button>}
           </div>
         </div>
       </div>

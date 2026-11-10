@@ -1,12 +1,22 @@
 import { LuCircle as Circle, LuCircleCheck as CircleCheck } from 'react-icons/lu';
 import { PASSWORD_RULES } from '../passwordRules.js';
 
-/** Live checklist under a password field: each rule turns green with a tick once it's met. */
+const LEVELS = ['Too weak', 'Too weak', 'Weak', 'Fair', 'Good', 'Strong'];
+
+/** Strength bar + live checklist under a password field. Each rule turns green once it's met. */
 export default function PasswordRules({ password = '' }) {
+  const met = PASSWORD_RULES.filter((r) => r.test(password)).length;
+  const level = met === PASSWORD_RULES.length ? 'strong' : met >= 3 ? 'fair' : 'weak';
   return (
-    <div className="pw-rules" aria-live="polite">
-      <div className="pw-rules-title">Your password needs</div>
-      <ul>
+    <div className={`pw-rules pw-${password ? level : 'empty'}`} aria-live="polite">
+      <div className="pw-head">
+        <span className="pw-title">Your password needs</span>
+        {password && <span className="pw-level">{LEVELS[met]}</span>}
+      </div>
+      <div className="pw-meter" aria-hidden="true">
+        {PASSWORD_RULES.map((r, i) => <span key={r.key} className={i < met ? 'on' : ''} />)}
+      </div>
+      <ul className="pw-list">
         {PASSWORD_RULES.map((r) => {
           const ok = r.test(password);
           return (

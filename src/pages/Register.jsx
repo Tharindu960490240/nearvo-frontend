@@ -55,15 +55,18 @@ export default function Register() {
   return (
     <AuthLayout icon={UserPlus} title="Create your account" subtitle="Free for customers and tradies">
       <form className="stack" onSubmit={submit}>
-        <div className="grid grid-2" style={{ gap: 10 }}>
-          <button type="button" className={`choice ${role === 'customer' ? 'selected' : ''}`} onClick={() => setRole('customer')}>
-            <House size={22} color={role === 'customer' ? 'var(--brand)' : 'var(--muted-color)'} />
-            <span><span className="bold">I need a tradie</span><br /><span className="tiny muted">Post jobs & get quotes</span></span>
-          </button>
-          <button type="button" className={`choice ${role === 'tradie' ? 'selected' : ''}`} onClick={() => setRole('tradie')}>
-            <HardHat size={22} color={role === 'tradie' ? 'var(--brand)' : 'var(--muted-color)'} />
-            <span><span className="bold">I'm a tradie</span><br /><span className="tiny muted">Find jobs & send quotes</span></span>
-          </button>
+        <div className="role-pick" role="radiogroup" aria-label="Account type">
+          {[
+            ['customer', House, 'I need a tradie', 'Post jobs and get free quotes'],
+            ['tradie', HardHat, "I'm a tradie", 'Find jobs near you and send quotes'],
+          ].map(([key, Icon, title, text]) => (
+            <button key={key} type="button" role="radio" aria-checked={role === key}
+              className={`role-option ${role === key ? 'selected' : ''}`} onClick={() => setRole(key)}>
+              <span className="role-icon"><Icon size={20} /></span>
+              <span className="role-text"><span className="role-title">{title}</span><span className="role-sub">{text}</span></span>
+              <span className="role-radio" aria-hidden="true" />
+            </button>
+          ))}
         </div>
 
         <TextInput label="Full name" icon={User} id="name" required autoComplete="name" value={form.name} onChange={set('name')} />

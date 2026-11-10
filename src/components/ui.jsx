@@ -174,8 +174,12 @@ export function Switch({ checked, onChange, children }) {
 
 export function CheckboxField({ id, checked, onChange, children }) {
   return (
-    <FormControlLabel control={<Checkbox id={id} checked={Boolean(checked)} onChange={(e) => onChange(e.target.checked)} />}
-      label={children} sx={{ alignItems: 'flex-start', ml: -1, '& .MuiCheckbox-root': { pt: 0.25 }, '& .MuiFormControlLabel-label': { fontSize: '0.92rem', pt: 0.5 } }} />
+    <FormControlLabel className="check-field"
+      control={<Checkbox id={id} size="small" checked={Boolean(checked)} onChange={(e) => onChange(e.target.checked)} />}
+      label={children}
+      sx={{ alignItems: 'flex-start', m: 0, gap: 1.25,
+        '& .MuiCheckbox-root': { p: 0, mt: '1px' },
+        '& .MuiFormControlLabel-label': { fontSize: '0.9rem', lineHeight: 1.5 } }} />
   );
 }
 

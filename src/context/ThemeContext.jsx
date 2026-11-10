@@ -39,7 +39,12 @@ export function ThemeModeProvider({ children }) {
       shape: { borderRadius: 8 },
       typography: { fontFamily: '"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', button: { textTransform: 'none', fontWeight: 600 } },
       components: {
-        MuiTextField: { defaultProps: { fullWidth: true } },
+        // Compact inputs across the whole app (40px tall instead of 56px).
+        MuiTextField: { defaultProps: { fullWidth: true, size: 'small' } },
+        MuiFormControl: { defaultProps: { size: 'small' } },
+        MuiInputBase: { styleOverrides: { root: { fontSize: '0.95rem' } } },
+        MuiInputLabel: { styleOverrides: { root: { fontSize: '0.95rem' } } },
+        MuiFormHelperText: { styleOverrides: { root: { marginLeft: 2, marginTop: 4 } } },
         MuiOutlinedInput: {
           styleOverrides: {
             root: { backgroundColor: dark ? 'rgba(255,255,255,0.02)' : '#fff' },
@@ -47,7 +52,7 @@ export function ThemeModeProvider({ children }) {
           },
         },
         MuiMenu: { styleOverrides: { paper: { borderRadius: 10, marginTop: 4 } } },
-        MuiAutocomplete: { styleOverrides: { paper: { borderRadius: 10, marginTop: 4 }, option: { borderRadius: 6, margin: '0 6px' } } },
+        MuiAutocomplete: { defaultProps: { size: 'small' }, styleOverrides: { paper: { borderRadius: 10, marginTop: 4 }, option: { borderRadius: 6, margin: '0 6px' } } },
         MuiDialog: { styleOverrides: { paper: { borderRadius: 16, backgroundImage: 'none' } } },
         MuiAlert: { styleOverrides: { root: { borderRadius: 10, alignItems: 'center' } } },
         MuiRating: { styleOverrides: { iconFilled: { color: '#f5a623' }, iconHover: { color: '#f5a623' } } },
