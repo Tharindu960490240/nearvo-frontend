@@ -51,7 +51,7 @@ function ChangePassword() {
           onChange={(e) => setForm({ ...form, current_password: e.target.value })} />
         <PasswordInput id="new-pw" label="New password" autoComplete="new-password" value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })} />
-        {form.password && <PasswordRules password={form.password} />}
+        <PasswordRules password={form.password} />
         {error && <Alert type="error">{error}</Alert>}
         <div className="row" style={{ justifyContent: 'flex-end' }}>
           <button className="btn btn-primary" disabled={busy || !form.current_password || !passwordOk(form.password)}>
