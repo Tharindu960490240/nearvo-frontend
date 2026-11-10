@@ -24,6 +24,7 @@ import { navFor, ROLE_LABELS } from '../const/navigation.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useThemeMode } from '../context/ThemeContext.jsx';
 import { Logo } from './Layout.jsx';
+import { showToast } from './ui.jsx';
 
 const TOGGLE_EVENT = 'nearvo:toggle-sidenav';
 const COLLAPSE_KEY = 'sideNavCollapsed';
@@ -70,7 +71,7 @@ export function TopHeader() {
     return () => document.removeEventListener('mousedown', close);
   }, []);
 
-  const doLogout = () => { logout(); navigate('/'); };
+  const doLogout = () => { logout(); navigate('/'); showToast('You have signed out. See you next time!', 'info', { title: 'Signed out' }); };
   const canPost = !user || user.role === 'customer';
 
   return (
@@ -152,7 +153,7 @@ export function SideNav() {
   };
 
   const items = user ? navFor(user) : GUEST_ITEMS;
-  const doLogout = () => { logout(); navigate('/'); };
+  const doLogout = () => { logout(); navigate('/'); showToast('You have signed out. See you next time!', 'info', { title: 'Signed out' }); };
 
   const item = (i) => {
     const content = (

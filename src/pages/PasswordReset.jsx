@@ -5,7 +5,7 @@ import { LuKeyRound as KeyRound, LuMail as Mail, LuMailCheck as MailCheck } from
 import { api } from '../api.js';
 import { AuthLayout } from '../components/Layout.jsx';
 import PasswordRules from '../components/PasswordRules.jsx';
-import { Alert, PasswordInput, Spinner, TextInput, useToast } from '../components/ui.jsx';
+import { Alert, PasswordInput, Spinner, TextInput, showToast, useToast } from '../components/ui.jsx';
 import { passwordOk } from '../passwordRules.js';
 
 export function ForgotPassword() {
@@ -20,9 +20,10 @@ export function ForgotPassword() {
     setError('');
     try {
       await api('/auth/forgot-password', { method: 'POST', body: { email } });
+      showToast('If that email has an account, a reset link is on its way.', 'info', { title: 'Check your email' });
       setSent(true);
     } catch (err) {
-      setError(err.message);
+      setError(err.message); showToast(err.message, 'error');
     } finally {
       setBusy(false);
     }
@@ -69,7 +70,7 @@ export function ResetPassword() {
       toast('Password changed. You can log in with your new password now.');
       navigate('/login', { replace: true });
     } catch (err) {
-      setError(err.message);
+      setError(err.message); showToast(err.message, 'error');
     } finally {
       setBusy(false);
     }

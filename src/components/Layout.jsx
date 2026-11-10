@@ -47,6 +47,7 @@ export function Footer() {
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} Nearvo</span>
           <span>Nearvo is a platform that connects customers and independent tradies. Tradies are not employed by Nearvo.</span>
+          <span className="tiny" style={{ opacity: 0.55 }}>Version {__NEARVO_BUILD__}</span>
         </div>
       </div>
     </footer>

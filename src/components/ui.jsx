@@ -1,6 +1,6 @@
 // Small UI building blocks. Form controls, dialogs and pop-up messages use Material UI
 // (like AFC); icons come from react-icons.
-import { createContext, forwardRef, useCallback, useContext, useState } from 'react';
+import { createContext, forwardRef, useCallback, useContext, useEffect, useState } from 'react';
 import MuiAlert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -238,6 +238,11 @@ export { Button };
 // toast(message, type = 'success', { action: { label, onClick }, title })
 // type: 'success' | 'error' | 'warning' | 'info'
 const ToastContext = createContext(() => {});
+const TOAST_EVENT = 'nearvo:toast';
+/** Show a snackbar from anywhere (no hook needed): showToast('Saved'), showToast(err.message, 'error'). */
+export const showToast = (message, type = 'success', opts = {}) =>
+  window.dispatchEvent(new CustomEvent(TOAST_EVENT, { detail: { message, type, opts } }));
+
 export function ToastProvider({ children }) {
   const [toast, setToast] = useState(null);
   const [open, setOpen] = useState(false);
@@ -245,6 +250,13 @@ export function ToastProvider({ children }) {
     setToast({ message, severity: type === 'warn' ? 'warning' : type, ...opts, key: Date.now() });
     setOpen(true);
   }, []);
+  useEffect(() => {
+    const onToast = (e) => show(e.detail.message, e.detail.type, e.detail.opts);
+    const onSignedOut = (e) => show(e.detail || 'You have been signed out', 'warning', { title: 'Signed out' });
+    window.addEventListener(TOAST_EVENT, onToast);
+    window.addEventListener('nearvo:signed-out', onSignedOut);
+    return () => { window.removeEventListener(TOAST_EVENT, onToast); window.removeEventListener('nearvo:signed-out', onSignedOut); };
+  }, [show]);
   return (
     <ToastContext.Provider value={show}>
       {children}

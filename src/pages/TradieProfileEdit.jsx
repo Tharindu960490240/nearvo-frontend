@@ -19,7 +19,7 @@ import LocationInput from '../components/LocationInput.jsx';
 import MapView from '../components/MapView.jsx';
 import AbnField from '../components/AbnField.jsx';
 import { TradieAvatar } from '../components/TradieBits.jsx';
-import { Alert, IconTile, LoadingPage, Spinner, Stars, TextInput, useToast } from '../components/ui.jsx';
+import { Alert, IconTile, LoadingPage, Spinner, Stars, TextInput, showToast, useToast } from '../components/ui.jsx';
 
 const UNITS = ['per hour', 'per job', 'per m²', 'on quote'];
 
@@ -136,7 +136,7 @@ export default function TradieProfileEdit() {
       toast('Profile saved');
       if (!wasComplete && me.profile_complete) navigate('/tradie');
     } catch (err) {
-      setError(err.message);
+      setError(err.message); showToast(err.message, 'error');
     } finally {
       setSaving(false);
     }

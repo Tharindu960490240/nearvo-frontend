@@ -14,7 +14,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import TradieCard from '../components/TradieCard.jsx';
 import LocationInput from '../components/LocationInput.jsx';
 import MapView from '../components/MapView.jsx';
-import { Alert, Empty, Skeleton, TextInput } from '../components/ui.jsx';
+import { Alert, Empty, Skeleton, TextInput, showToast } from '../components/ui.jsx';
 
 const useIsDesktop = () => {
   const [d, setD] = useState(() => window.matchMedia('(min-width: 901px)').matches);
@@ -69,6 +69,7 @@ export default function FindTradies() {
       update({ lat: p.lat.toFixed(5), lng: p.lng.toFixed(5), near: 'My location', state: '' });
     } catch (e) {
       setError(e.message);
+      showToast(e.message, 'error');
     }
   };
 

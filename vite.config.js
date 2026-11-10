@@ -1,7 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+// Build stamp shown in the footer, so you can check which version is live after deploying.
+const BUILD = new Date().toISOString().slice(0, 16).replace(/[-:]/g, '').replace('T', '-');
+
 export default defineConfig({
+  define: { __NEARVO_BUILD__: JSON.stringify(BUILD) },
   plugins: [react()],
   build: {
     rollupOptions: {

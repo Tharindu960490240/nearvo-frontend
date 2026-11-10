@@ -13,7 +13,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import LocationInput from '../components/LocationInput.jsx';
 import { CategoryTile } from '../components/CategoryIcon.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
-import { Alert, Spinner, Stepper, TextInput } from '../components/ui.jsx';
+import { Alert, Spinner, Stepper, TextInput, showToast } from '../components/ui.jsx';
 
 const STEPS = ['Trade', 'Job details', 'Location & timing'];
 
@@ -62,7 +62,7 @@ export default function PostJob() {
     if (step === 2 && !place) return 'Please choose the suburb where the job is';
     return '';
   };
-  const next = () => { const m = validate(); setError(m); if (!m) setStep(step + 1); };
+  const next = () => { const m = validate(); setError(m); if (m) showToast(m, 'warning'); else setStep(step + 1); };
   const submit = async () => {
     const m = validate();
     if (m) return setError(m);
@@ -70,9 +70,10 @@ export default function PostJob() {
     setError('');
     try {
       const { id } = await api('/jobs', { method: 'POST', body: { ...form, suburb_id: place.id } });
+      showToast('Your job is live. Local tradies are being told about it now.', 'success', { title: 'Job posted' });
       navigate(`/jobs/${id}?posted=1`);
     } catch (e) {
-      setError(e.message);
+      setError(e.message); showToast(e.message, 'error');
       setSaving(false);
     }
   };

@@ -4,7 +4,7 @@ import { LuLogIn as LogIn, LuMail as Mail } from 'react-icons/lu';
 import { homeFor, useAuth } from '../context/AuthContext.jsx';
 import { AuthLayout } from '../components/Layout.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
-import { Alert, PasswordInput, Spinner, TextInput } from '../components/ui.jsx';
+import { Alert, PasswordInput, Spinner, TextInput, showToast } from '../components/ui.jsx';
 
 const DEMO = [['Customer', 'customer@example.com'], ['Tradie', 'sam@example.com'], ['Admin', 'admin@example.com']];
 
@@ -22,9 +22,10 @@ export default function Login() {
     setError('');
     try {
       const u = await login(email, password);
+      showToast(`Welcome back, ${u.name.split(' ')[0]}!`, 'success', { title: 'Logged in' });
       navigate(location.state?.from || homeFor(u), { replace: true });
     } catch (err) {
-      setError(err.message);
+      setError(err.message); showToast(err.message, 'error');
     } finally {
       setBusy(false);
     }

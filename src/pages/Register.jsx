@@ -15,7 +15,7 @@ import AbnField from '../components/AbnField.jsx';
 import PasswordRules from '../components/PasswordRules.jsx';
 import { passwordOk, personalHints } from '../passwordRules.js';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
-import { Alert, CheckboxField, PasswordInput, Spinner, TextInput } from '../components/ui.jsx';
+import { Alert, CheckboxField, PasswordInput, Spinner, TextInput, showToast } from '../components/ui.jsx';
 
 export default function Register() {
   const { register } = useAuth();
@@ -39,16 +39,18 @@ export default function Register() {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (role === 'tradie' && !abr) return setError('Please enter an active ABN or ACN. We check it with the Australian Business Register.');
-    if (!passwordOk(form.password, hints)) return setError('Please choose a password that meets all the rules');
-    if (!agree) return setError('Please agree to the Terms of Use and Privacy Policy');
+    const stop = (m) => { setError(m); showToast(m, 'warning'); };
+    if (role === 'tradie' && !abr) return stop('Please enter an active ABN or ACN. We check it with the Australian Business Register.');
+    if (!passwordOk(form.password, hints)) return stop('Please choose a password that meets all the rules');
+    if (!agree) return stop('Please agree to the Terms of Use and Privacy Policy');
     setBusy(true);
     setError('');
     try {
       const u = await register({ ...form, role, accept_terms: true });
+      showToast(`Welcome to Nearvo, ${u.name.split(' ')[0]}! Check your email to confirm your address.`, 'success', { title: 'Account created' });
       navigate(location.state?.from && role === 'customer' ? location.state.from : homeFor(u), { replace: true });
     } catch (err) {
-      setError(err.message);
+      setError(err.message); showToast(err.message, 'error');
     } finally {
       setBusy(false);
     }

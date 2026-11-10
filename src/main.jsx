@@ -29,3 +29,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </StyledEngineProvider>
   </React.StrictMode>
 );
+
+console.info(`Nearvo version ${__NEARVO_BUILD__}`);

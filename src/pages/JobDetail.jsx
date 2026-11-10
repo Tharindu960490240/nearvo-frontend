@@ -22,7 +22,7 @@ import { CategoryTile } from '../components/CategoryIcon.jsx';
 import { AMOUNT_TYPE_LABEL, AbnBadge, JobStatusChip, QuoteStatusChip, TradieAvatar } from '../components/TradieBits.jsx';
 import ReportButton from '../components/ReportDialog.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
-import { Alert, ConfirmDialog, Empty, LoadingPage, Spinner, StarInput, Stars, Stepper, TextInput, useToast } from '../components/ui.jsx';
+import { Alert, ConfirmDialog, Empty, LoadingPage, Spinner, StarInput, Stars, Stepper, TextInput, showToast, useToast } from '../components/ui.jsx';
 
 const telHref = (p) => `tel:${p.replace(/[^\d+]/g, '')}`;
 const STEP = { open: 1, assigned: 2, completed: 4 };
@@ -90,7 +90,7 @@ function ReviewForm({ jobId, tradieName, onDone }) {
       await api(`/jobs/${jobId}/review`, { method: 'POST', body: { rating, comment } });
       onDone();
     } catch (err) {
-      setError(err.message);
+      setError(err.message); showToast(err.message, 'error');
       setSaving(false);
     }
   };
@@ -122,7 +122,7 @@ function QuoteForm({ job, onDone }) {
       setEditing(false);
       onDone(mine?.status === 'pending' ? 'Quote updated' : 'Quote sent! The customer has been notified.');
     } catch (err) {
-      setError(err.message);
+      setError(err.message); showToast(err.message, 'error');
     } finally {
       setSaving(false);
     }

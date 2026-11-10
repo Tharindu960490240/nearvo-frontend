@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import InputAdornment from '@mui/material/InputAdornment';
 import { LuSearch as Search } from 'react-icons/lu';
 import { api } from '../../api.js';
-import { Alert, CheckboxField, Empty, Modal, Spinner, TextInput } from '../../components/ui.jsx';
+import { Alert, CheckboxField, Empty, Modal, Spinner, TextInput, showToast } from '../../components/ui.jsx';
 import { InlineLoader } from '../../components/LoadingSpinner.jsx';
 
 export function AdminHeader({ title, subtitle, action }) {
@@ -104,6 +104,7 @@ export function ActionDialog({ open, title, text, noteLabel = 'Reason (optional)
       onClose();
     } catch (e) {
       setError(e.message);
+      showToast(e.message, 'error');
       setBusy(false);
     }
   };

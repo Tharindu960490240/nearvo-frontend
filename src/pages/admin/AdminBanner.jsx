@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../api.js';
 import { AnnouncementBar } from '../../components/Announcement.jsx';
 import { InlineLoader } from '../../components/LoadingSpinner.jsx';
-import { Alert, Spinner, Switch, TextInput, useToast } from '../../components/ui.jsx';
+import { Alert, Spinner, Switch, TextInput, showToast, useToast } from '../../components/ui.jsx';
 import { AdminHeader } from './common.jsx';
 
 const toLocalInput = (iso) => {
@@ -32,7 +32,7 @@ export default function AdminBanner() {
       setForm({ ...form, active: r.active });
       toast(r.active ? 'Banner is live for everyone' : 'Banner turned off');
     } catch (err) {
-      setError(err.message);
+      setError(err.message); showToast(err.message, 'error');
     } finally {
       setBusy(false);
     }

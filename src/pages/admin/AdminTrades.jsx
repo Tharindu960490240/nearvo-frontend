@@ -4,7 +4,7 @@ import { LuEye as Eye, LuEyeOff as EyeOff, LuPencil as Pencil, LuPlus as Plus, L
 import { api } from '../../api.js';
 import { CATEGORY_ICON_KEYS, CategoryIcon, CategoryTile } from '../../components/CategoryIcon.jsx';
 import { InlineLoader } from '../../components/LoadingSpinner.jsx';
-import { Alert, Empty, Modal, Spinner, TextInput, useToast } from '../../components/ui.jsx';
+import { Alert, Empty, Modal, Spinner, TextInput, showToast, useToast } from '../../components/ui.jsx';
 import { AdminHeader } from './common.jsx';
 
 function TradeDialog({ trade, icons, onClose, onSaved }) {
@@ -26,6 +26,7 @@ function TradeDialog({ trade, icons, onClose, onSaved }) {
       onClose();
     } catch (e) {
       setError(e.message);
+      showToast(e.message, 'error');
       setBusy(false);
     }
   };

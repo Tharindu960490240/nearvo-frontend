@@ -13,7 +13,7 @@ import {
 import { api } from '../api.js';
 import { UserAvatar } from '../components/AppShell.jsx';
 import PasswordRules from '../components/PasswordRules.jsx';
-import { Alert, Modal, PasswordInput, Spinner, Switch, TextInput, useToast } from '../components/ui.jsx';
+import { Alert, Modal, PasswordInput, Spinner, Switch, TextInput, showToast, useToast } from '../components/ui.jsx';
 import { passwordOk, personalHints } from '../passwordRules.js';
 import { ROLE_LABELS } from '../const/navigation.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -38,7 +38,7 @@ function ChangePassword() {
       setForm({ current_password: '', password: '' });
       toast('Password changed. Other devices have been logged out.');
     } catch (err) {
-      setError(err.message);
+      setError(err.message); showToast(err.message, 'error');
     } finally {
       setBusy(false);
     }
@@ -82,7 +82,7 @@ function DeleteAccount() {
       toast('Your account has been deleted. Thanks for using Nearvo.', 'info');
       navigate('/', { replace: true });
     } catch (err) {
-      setError(err.message);
+      setError(err.message); showToast(err.message, 'error');
       setBusy(false);
     }
   };
@@ -129,7 +129,7 @@ export default function Account() {
       await refresh();
       toast('Your details were saved');
     } catch (err) {
-      setError(err.message);
+      setError(err.message); showToast(err.message, 'error');
     } finally {
       setBusy(false);
     }

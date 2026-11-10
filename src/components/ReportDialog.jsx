@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { LuFlag as Flag } from 'react-icons/lu';
 import { api } from '../api.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Alert, Modal, Spinner, TextInput, useToast } from './ui.jsx';
+import { Alert, Modal, Spinner, TextInput, showToast, useToast } from './ui.jsx';
 
 export const REPORT_REASONS = [
   ['defamatory', 'False or defamatory (untrue claims that harm someone)'],
@@ -31,7 +31,7 @@ export function ReportForm({ targetType = 'other', targetId = null, onDone, onCa
       toast(`Thanks, we received your report (#${r.id}). We'll be in touch by email.`);
       onDone?.(r);
     } catch (err) {
-      setError(err.message);
+      setError(err.message); showToast(err.message, 'error');
     } finally {
       setBusy(false);
     }
